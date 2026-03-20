@@ -1,6 +1,14 @@
+import type { Metadata } from "next";
 import Link from "next/link";
 import { HubTotal } from "@/components/HubTotal";
 import { getUtcDateKey } from "@/lib/daily";
+import { SITE_DESCRIPTION } from "@/lib/seo";
+
+export const metadata: Metadata = {
+  title: { absolute: "SWEDLE — daily games for software engineers" },
+  description: SITE_DESCRIPTION,
+  alternates: { canonical: "/" },
+};
 
 const games = [
   {

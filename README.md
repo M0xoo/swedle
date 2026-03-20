@@ -23,6 +23,8 @@ Quiz games (everything except Langdle) show a richer **end screen** when you fin
 
 Server actions validate picks where answers must stay server-side; daily puzzles are **deterministic** from the date string + seeded PRNG (`lib/seed.ts`).
 
+**Community stats (optional):** [Firebase Admin](https://firebase.google.com/docs/admin/setup) + **Firestore** store per-day solver counts and score histograms. End screens show how many people finished today, an approximate “better than X%” line (quiz: higher score wins; Langdle: fewer guesses wins), and a small distribution chart. Only the **server** talks to Firestore (`firebase-admin`); configure via `.env.example`. If Firebase env is unset, those UI blocks stay hidden.
+
 ## Run locally
 
 ```bash
@@ -30,7 +32,7 @@ npm install
 npm run dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000).
+Open [http://localhost:3000](http://localhost:3000). The live site is [swedle.mokh.xyz](https://swedle.mokh.xyz).
 
 ```bash
 npm run build   # production build
@@ -56,4 +58,8 @@ Repo star counts, IPO ballpark numbers, and timeline years are **curated snapsho
 
 ## Deploy
 
-Any Node host that supports Next.js works (e.g. [Vercel](https://vercel.com/docs/frameworks/nextjs)). Set nothing special unless you add env-based config later.
+Any Node host that supports Next works (e.g. [Vercel](https://vercel.com/docs/frameworks/nextjs)).
+
+**Optional env:** `NEXT_PUBLIC_SITE_URL` — overrides the default production origin (`https://swedle.mokh.xyz`) for canonical URLs, `sitemap.xml`, and Open Graph/Twitter `metadataBase`. On **Vercel preview** deployments, the preview hostname is used automatically so links stay on the preview.
+
+**Firebase (community stats):** Create a Firebase project → enable **Firestore** (Native) → create a **service account** and download JSON. Set `FIREBASE_SERVICE_ACCOUNT_KEY` to the **full JSON on one line** (keep `private_key` newlines as `\n` inside the string), or use `GOOGLE_APPLICATION_CREDENTIALS` / `FIREBASE_USE_ADC=1` on GCP; see `.env.example`. Firestore collection: `dailyStats` with doc IDs `{UTC-date}_{game}` (`stars`, `ipo`, `timeline`, `complexity`, `lang`). You can lock client access in Firestore rules since only Admin SDK writes.

@@ -1,5 +1,6 @@
 "use client";
 
+import type { ReactNode } from "react";
 import Link from "next/link";
 import { motion } from "framer-motion";
 
@@ -29,6 +30,7 @@ export function GameEndScreen({
   total,
   title,
   noun,
+  community,
 }: {
   variant: Variant;
   title: string;
@@ -36,6 +38,8 @@ export function GameEndScreen({
   noun: string;
   score: number;
   total: number;
+  /** Optional Firestore-backed community stats (solvers + distribution). */
+  community?: ReactNode;
 }) {
   const perfect = total > 0 && score === total;
   const blurb = perfect
@@ -134,6 +138,8 @@ export function GameEndScreen({
         >
           {blurb}
         </motion.p>
+
+        {community}
 
         <motion.p
           initial={{ opacity: 0 }}

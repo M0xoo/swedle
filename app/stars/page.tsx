@@ -1,7 +1,19 @@
+import type { Metadata } from "next";
 import { GameShell } from "@/components/GameShell";
 import { StarsGame } from "@/components/StarsGame";
 import { getUtcDateKey } from "@/lib/daily";
 import { getDailyStarBattle } from "@/lib/games/stars";
+
+export const metadata: Metadata = {
+  title: "Star Battle",
+  description:
+    "Daily bracket: pick which famous open-source repo has more GitHub stars. The winner stays on the left for five rounds.",
+  alternates: { canonical: "/stars" },
+  openGraph: {
+    title: "Star Battle | SWEDLE",
+    url: "/stars",
+  },
+};
 
 export default function StarsPage() {
   const dateKey = getUtcDateKey();

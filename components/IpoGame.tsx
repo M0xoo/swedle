@@ -7,6 +7,7 @@ import type { IpoMode } from "@/lib/games/ipos";
 import { ipoPrompt } from "@/lib/games/ipos";
 import { bumpScore, readScore } from "@/lib/score";
 import type { IpoEntry } from "@/lib/types";
+import { DailyCommunityStats } from "@/components/DailyCommunityStats";
 import { GameEndScreen } from "@/components/GameEndScreen";
 import { PersistHint } from "@/components/PersistHint";
 import { ScorePulse } from "@/components/ScorePulse";
@@ -128,7 +129,7 @@ export function IpoGame({
                   transition={{
                     layout: { type: "spring", stiffness: 420, damping: 34 },
                     opacity: { duration: 0.25 },
-                    x: { duration: 0.45 },
+                    x: { type: "tween", duration: 0.45, ease: "easeInOut" },
                   }}
                   className={cardClass("left", highlight)}
                 >
@@ -166,7 +167,7 @@ export function IpoGame({
                   transition={{
                     layout: { type: "spring", stiffness: 420, damping: 34 },
                     opacity: { duration: 0.28 },
-                    x: { type: "spring", stiffness: 380, damping: 30 },
+                    x: { type: "tween", duration: 0.45, ease: "easeInOut" },
                     scale: { duration: 0.25 },
                   }}
                   className={cardClass("right", highlight)}
@@ -192,6 +193,14 @@ export function IpoGame({
             noun="hits"
             score={score}
             total={total}
+            community={
+              <DailyCommunityStats
+                dateKey={dateKey}
+                game="ipo"
+                kind="quiz"
+                userScore={score}
+              />
+            }
           />
         )}
       </AnimatePresence>

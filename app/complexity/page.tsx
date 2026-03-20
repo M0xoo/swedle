@@ -1,7 +1,19 @@
+import type { Metadata } from "next";
 import { GameShell } from "@/components/GameShell";
 import { ComplexityGame } from "@/components/ComplexityGame";
 import { getUtcDateKey } from "@/lib/daily";
 import { getDailyComplexity } from "@/lib/games/complexity";
+
+export const metadata: Metadata = {
+  title: "Big‑O Blitz",
+  description:
+    "Five daily multiple-choice questions on time and space complexity — algorithms and data structures.",
+  alternates: { canonical: "/complexity" },
+  openGraph: {
+    title: "Big‑O Blitz | SWEDLE",
+    url: "/complexity",
+  },
+};
 
 export default function ComplexityPage() {
   const dateKey = getUtcDateKey();

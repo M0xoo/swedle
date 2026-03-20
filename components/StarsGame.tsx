@@ -5,6 +5,7 @@ import { LayoutGroup, motion, AnimatePresence } from "framer-motion";
 import { submitStarPick } from "@/app/actions";
 import { bumpScore, readScore } from "@/lib/score";
 import type { RepoEntry } from "@/lib/types";
+import { DailyCommunityStats } from "@/components/DailyCommunityStats";
 import { GameEndScreen } from "@/components/GameEndScreen";
 import { PersistHint } from "@/components/PersistHint";
 import { ScorePulse } from "@/components/ScorePulse";
@@ -121,7 +122,7 @@ export function StarsGame({
                 transition={{
                   layout: { type: "spring", stiffness: 420, damping: 34 },
                   opacity: { duration: 0.25 },
-                  x: { duration: 0.45 },
+                  x: { type: "tween", duration: 0.45, ease: "easeInOut" },
                 }}
                 className={cardClass("left", highlight)}
               >
@@ -159,7 +160,7 @@ export function StarsGame({
                 transition={{
                   layout: { type: "spring", stiffness: 420, damping: 34 },
                   opacity: { duration: 0.28 },
-                  x: { type: "spring", stiffness: 380, damping: 30 },
+                  x: { type: "tween", duration: 0.45, ease: "easeInOut" },
                   scale: { duration: 0.25 },
                 }}
                 className={cardClass("right", highlight)}
@@ -184,6 +185,14 @@ export function StarsGame({
             noun="hits"
             score={score}
             total={total}
+            community={
+              <DailyCommunityStats
+                dateKey={dateKey}
+                game="stars"
+                kind="quiz"
+                userScore={score}
+              />
+            }
           />
         )}
       </AnimatePresence>

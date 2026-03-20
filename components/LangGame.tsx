@@ -11,6 +11,7 @@ import {
 import { motion, AnimatePresence } from "framer-motion";
 import { submitLanguageGuess } from "@/app/actions";
 import { FeedbackCell } from "@/components/FeedbackCell";
+import { DailyCommunityStats } from "@/components/DailyCommunityStats";
 import { LangShareButton } from "@/components/LangShareButton";
 import { PersistHint } from "@/components/PersistHint";
 import type { LangGuessResult } from "@/lib/games/language";
@@ -229,6 +230,17 @@ export function LangGame({
           ))}
         </AnimatePresence>
       </div>
+
+      {solved || exhausted ? (
+        <div className="flex justify-center">
+          <DailyCommunityStats
+            dateKey={dateKey}
+            game="lang"
+            kind="lang"
+            userScore={solved && rows.length > 0 ? rows.length : 0}
+          />
+        </div>
+      ) : null}
     </div>
   );
 }

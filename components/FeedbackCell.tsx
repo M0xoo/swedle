@@ -39,7 +39,20 @@ export function FeedbackCell({
               : { x: [0, -4, 4, -3, 3, 0] }
           : {}
       }
-      transition={{ duration: tone === "green" ? 0.42 : 0.48 }}
+      transition={
+        revealed
+          ? tone === "green"
+            ? {
+                layout: { type: "tween", duration: 0.2 },
+                scale: { type: "tween", duration: 0.42, ease: "easeInOut" },
+                filter: { type: "tween", duration: 0.42, ease: "easeInOut" },
+              }
+            : {
+                layout: { type: "tween", duration: 0.2 },
+                x: { type: "tween", duration: 0.48, ease: "easeInOut" },
+              }
+          : { layout: { type: "tween", duration: 0.2 } }
+      }
       className={`flex min-h-[3.75rem] min-w-0 flex-col justify-center rounded-md px-2 py-1.5 sm:min-h-[4.25rem] sm:px-2.5 sm:py-2 ${c}`}
     >
       <span className="text-[9px] font-medium uppercase tracking-[0.12em] text-[var(--muted)] sm:text-[10px]">

@@ -1,7 +1,19 @@
+import type { Metadata } from "next";
 import { GameShell } from "@/components/GameShell";
 import { IpoGame } from "@/components/IpoGame";
 import { getUtcDateKey } from "@/lib/daily";
 import { getDailyIpoQuiz } from "@/lib/games/ipos";
+
+export const metadata: Metadata = {
+  title: "IPO Showdown",
+  description:
+    "Compare tech company IPOs: higher opening valuation or earlier listing. Five daily head-to-heads in a winner-stays-left chain.",
+  alternates: { canonical: "/ipo" },
+  openGraph: {
+    title: "IPO Showdown | SWEDLE",
+    url: "/ipo",
+  },
+};
 
 export default function IpoPage() {
   const dateKey = getUtcDateKey();

@@ -4,6 +4,7 @@ import { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { submitComplexityAnswer } from "@/app/actions";
 import { bumpScore, readScore } from "@/lib/score";
+import { DailyCommunityStats } from "@/components/DailyCommunityStats";
 import { GameEndScreen } from "@/components/GameEndScreen";
 import { PersistHint } from "@/components/PersistHint";
 import { ScorePulse } from "@/components/ScorePulse";
@@ -108,6 +109,14 @@ export function ComplexityGame({
             noun="hits"
             score={score}
             total={total}
+            community={
+              <DailyCommunityStats
+                dateKey={dateKey}
+                game="complexity"
+                kind="quiz"
+                userScore={score}
+              />
+            }
           />
         )}
       </AnimatePresence>
