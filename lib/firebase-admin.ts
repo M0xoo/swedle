@@ -18,12 +18,27 @@ function parseServiceAccount(): ServiceAccount | null {
   }
 }
 
+/** GCP project id from typical Cloud Run / GCE / local gcloud env. */
+function gcpProjectIdFromEnv(): string | undefined {
+  const id =
+    process.env.FIREBASE_PROJECT_ID?.trim() ||
+    process.env.GOOGLE_CLOUD_PROJECT?.trim() ||
+    process.env.GCLOUD_PROJECT?.trim();
+  return id || undefined;
+}
+
+/** True on Cloud Run services (metadata server + runtime SA ADC). */
+function isCloudRun(): boolean {
+  return Boolean(process.env.K_SERVICE);
+}
+
 export function isFirebaseStatsEnabled(): boolean {
-  return (
-    Boolean(parseServiceAccount()) ||
-    Boolean(process.env.GOOGLE_APPLICATION_CREDENTIALS) ||
-    process.env.FIREBASE_USE_ADC === "1"
-  );
+  if (parseServiceAccount()) return true;
+  if (process.env.GOOGLE_APPLICATION_CREDENTIALS) return true;
+  if (process.env.FIREBASE_USE_ADC === "1") return true;
+  // Cloud Run: ADC is always available; same GCP project as Firebase when linked.
+  if (isCloudRun() && gcpProjectIdFromEnv()) return true;
+  return false;
 }
 
 function ensureApp() {
@@ -41,22 +56,24 @@ function ensureApp() {
     });
     return;
   }
-  // Cloud Run / GCP: ADC (optionally set FIREBASE_PROJECT_ID or rely on GCLOUD_PROJECT)
+  // Cloud Run / GCE / local: ADC via metadata server or GOOGLE_APPLICATION_CREDENTIALS
   const gac = process.env.GOOGLE_APPLICATION_CREDENTIALS;
-  const projectId =
-    process.env.FIREBASE_PROJECT_ID ?? process.env.GCLOUD_PROJECT;
+  const projectId = gcpProjectIdFromEnv();
   if (projectId) {
     initializeApp({ projectId });
   } else {
     initializeApp();
   }
+  const adcLabel = isCloudRun()
+    ? "ADC (Cloud Run service account)"
+    : process.env.FIREBASE_USE_ADC === "1"
+      ? "ADC (FIREBASE_USE_ADC=1)"
+      : "ADC / default";
   statsLog("Firebase Admin initialized", {
     credential: gac
       ? `GOOGLE_APPLICATION_CREDENTIALS (${path.basename(gac)})`
-      : process.env.FIREBASE_USE_ADC === "1"
-        ? "ADC (FIREBASE_USE_ADC=1)"
-        : "ADC / default",
-    projectId: projectId ?? "(from credentials)",
+      : adcLabel,
+    projectId: projectId ?? "(from credentials / metadata)",
   });
 }
 
