@@ -1,5 +1,6 @@
 import Link from "next/link";
 import type { ReactNode } from "react";
+import { DailyPuzzleDate } from "@/components/DailyPuzzleDate";
 
 export function GameShell({
   title,
@@ -22,12 +23,7 @@ export function GameShell({
           >
             ← SWEDLE
           </Link>
-          <time
-            dateTime={dateKey}
-            className="font-mono-ui border border-[var(--line)] bg-[var(--bg-raised)] px-2.5 py-1 text-[11px] tracking-wide text-[var(--muted)]"
-          >
-            {dateKey} UTC
-          </time>
+          <DailyPuzzleDate dateKey={dateKey} variant="game" />
         </div>
         <div>
           <h1 className="font-display text-[1.65rem] font-medium leading-tight tracking-tight text-[var(--fg)] sm:text-[2rem]">

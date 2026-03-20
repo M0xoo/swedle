@@ -1,7 +1,9 @@
 import type { Metadata } from "next";
-import Link from "next/link";
+import { DailyPuzzleDate } from "@/components/DailyPuzzleDate";
+import { HomeGameTiles } from "@/components/HomeGameTiles";
 import { HubTotal } from "@/components/HubTotal";
 import { getUtcDateKey } from "@/lib/daily";
+import { HOME_GAMES } from "@/lib/home-games";
 import { SITE_DESCRIPTION } from "@/lib/seo";
 
 export const metadata: Metadata = {
@@ -9,34 +11,6 @@ export const metadata: Metadata = {
   description: SITE_DESCRIPTION,
   alternates: { canonical: "/" },
 };
-
-const games = [
-  {
-    href: "/lang",
-    title: "Langdle",
-    blurb: "Guess the language from paradigm, platforms, year, and more — green means exact, orange means close.",
-  },
-  {
-    href: "/stars",
-    title: "Star Battle",
-    blurb: "Five rounds in a row: the winner stays on the left, a new repo challenges from the right.",
-  },
-  {
-    href: "/ipo",
-    title: "IPO Showdown",
-    blurb: "Same chain mechanic — winner holds the left slot while a new company enters on the right.",
-  },
-  {
-    href: "/complexity",
-    title: "Big‑O Blitz",
-    blurb: "Pick the tightest complexity bound — algorithms and data structures, no tricks.",
-  },
-  {
-    href: "/timeline",
-    title: "Chrono Commit",
-    blurb: "Earlier event keeps the left; five rounds, new challenger on the right each time.",
-  },
-] as const;
 
 export default function Home() {
   const dateKey = getUtcDateKey();
@@ -56,31 +30,14 @@ export default function Home() {
             browser.
           </p>
           <div className="flex flex-wrap items-baseline gap-x-3 gap-y-1 text-sm">
-            <time
-              dateTime={dateKey}
-              className="font-mono-ui border border-[var(--line)] bg-[var(--bg-raised)] px-2.5 py-1 text-xs text-[var(--muted)]"
-            >
-              {dateKey}
-            </time>
+            <DailyPuzzleDate dateKey={dateKey} variant="home" />
             <span className="text-[var(--muted2)]">Quiz points</span>
             <HubTotal dateKey={dateKey} />
           </div>
         </header>
 
         <section className="grid gap-3 sm:grid-cols-2">
-          {games.map((g) => (
-            <Link key={g.href} href={g.href} className="game-tile group block">
-              <h2 className="font-display text-lg font-medium text-[var(--fg)] group-hover:text-[var(--accent-bright)]">
-                {g.title}
-              </h2>
-              <p className="mt-2 text-sm leading-relaxed text-[var(--muted)]">
-                {g.blurb}
-              </p>
-              <span className="mt-4 inline-block text-xs font-medium tracking-wide text-[var(--accent)]">
-                Open →
-              </span>
-            </Link>
-          ))}
+          <HomeGameTiles dateKey={dateKey} games={HOME_GAMES} />
         </section>
 
         <footer className="border-t border-[var(--line)] pt-8 text-xs leading-relaxed text-[var(--muted2)]">

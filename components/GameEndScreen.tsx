@@ -3,6 +3,8 @@
 import type { ReactNode } from "react";
 import Link from "next/link";
 import { motion } from "framer-motion";
+import { NextGameButton } from "@/components/NextGameButton";
+import { nextGameAfterQuiz } from "@/lib/game-nav";
 
 function tierMessage(score: number, total: number): string {
   if (total <= 0) return "—";
@@ -45,6 +47,7 @@ export function GameEndScreen({
   const blurb = perfect
     ? perfectTagline[variant] ?? tierMessage(score, total)
     : tierMessage(score, total);
+  const nextGame = nextGameAfterQuiz(variant);
 
   return (
     <motion.div
@@ -139,13 +142,17 @@ export function GameEndScreen({
           {blurb}
         </motion.p>
 
+        <div className="mt-8 flex w-full justify-center">
+          <NextGameButton href={nextGame.href} gameTitle={nextGame.title} />
+        </div>
+
         {community}
 
         <motion.p
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           transition={{ delay: 0.58 }}
-          className="mt-6 border-t border-[var(--line)] pt-5 font-mono-ui text-[11px] leading-relaxed text-[var(--muted2)]"
+          className="mt-8 border-t border-[var(--line)] pt-5 font-mono-ui text-[11px] leading-relaxed text-[var(--muted2)]"
         >
           New puzzles at UTC midnight ·{" "}
           <Link

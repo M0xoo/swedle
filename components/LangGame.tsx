@@ -13,7 +13,10 @@ import { submitLanguageGuess } from "@/app/actions";
 import { FeedbackCell } from "@/components/FeedbackCell";
 import { DailyCommunityStats } from "@/components/DailyCommunityStats";
 import { LangShareButton } from "@/components/LangShareButton";
+import { LangSolveCelebration } from "@/components/LangSolveCelebration";
+import { NextGameButton } from "@/components/NextGameButton";
 import { PersistHint } from "@/components/PersistHint";
+import { nextGameAfterLang } from "@/lib/game-nav";
 import type { LangGuessResult } from "@/lib/games/language";
 import {
   labelExecution,
@@ -75,6 +78,10 @@ export function LangGame({
 
   const solved = rows.some((r) => r.solved);
   const exhausted = rows.length >= 6;
+  const solvedRow = useMemo(
+    () => rows.find((r) => r.solved) ?? null,
+    [rows],
+  );
 
   useEffect(() => {
     function onDoc(e: MouseEvent) {
@@ -120,56 +127,86 @@ export function LangGame({
   return (
     <div className="flex flex-col gap-6">
       <div className="panel p-4">
-        <p className="text-xs font-medium uppercase tracking-[0.14em] text-[var(--muted)]">
-          Guess a language
-        </p>
-        <div className="relative mt-3" ref={wrapRef}>
-          <input
-            value={query}
-            disabled={solved || exhausted}
-            onChange={(e) => {
-              setQuery(e.target.value);
-              setOpen(true);
-            }}
-            onFocus={() => setOpen(true)}
-            placeholder="Search (e.g. Rust, Erlang)…"
-            className="w-full rounded-md border border-[var(--line)] bg-[var(--bg-input)] px-4 py-3 text-sm text-[var(--fg)] outline-none transition-[border-color,box-shadow] placeholder:text-[var(--muted2)] focus:border-[color-mix(in_srgb,var(--accent)_55%,var(--line))] focus:shadow-[0_0_0_2px_color-mix(in_srgb,var(--accent)_12%,transparent)] disabled:opacity-50"
-          />
-          {open && !solved && !exhausted ? (
-            <ul className="absolute z-20 mt-2 max-h-56 w-full overflow-auto rounded-md border border-[var(--line)] bg-[var(--bg-raised)] py-1 shadow-lg shadow-black/40">
-              {filtered.map((l) => (
-                <li key={l.id}>
-                  <button
-                    type="button"
-                    onMouseDown={(e) => e.preventDefault()}
-                    onClick={() => pick(l.id)}
-                    className="flex w-full px-4 py-2.5 text-left text-sm text-[var(--fg)] hover:bg-[color-mix(in_srgb,var(--fg)_6%,transparent)]"
-                  >
-                    {l.name}
-                  </button>
-                </li>
-              ))}
-              {filtered.length === 0 ? (
-                <li className="px-4 py-3 text-sm text-[var(--muted)]">No match</li>
-              ) : null}
-            </ul>
-          ) : null}
-        </div>
-        {error ? (
-          <p className="mt-2 text-sm text-[var(--bad)]">{error}</p>
-        ) : null}
-        <p className="mt-3 text-xs text-[var(--muted2)]">
-          {solved
-            ? "Solved — come back tomorrow."
-            : exhausted
-              ? "Out of guesses."
-              : `${6 - rows.length} guesses left`}
-        </p>
-        {solved && rows.length > 0 ? (
-          <div className="mt-5 border-t border-[var(--line)] pt-5">
-            <LangShareButton dateKey={dateKey} rowsNewestFirst={rows} />
+        {solved && solvedRow ? (
+          <div>
+            <LangSolveCelebration
+              label={
+                <p className="font-mono-ui text-[10px] uppercase tracking-[0.18em] text-[var(--muted)]">
+                  Today&apos;s language
+                </p>
+              }
+              title={
+                <h2 className="font-display mt-3 text-[2rem] font-medium leading-[1.1] tracking-tight text-[var(--fg)] drop-shadow-[0_0_28px_color-mix(in_srgb,var(--good)_35%,transparent)] sm:text-4xl sm:leading-[1.08]">
+                  {solvedRow.guess.name}
+                </h2>
+              }
+              body={
+                <p className="mt-4 text-sm leading-relaxed text-[var(--muted)]">
+                  That&apos;s the one — you called it. A brand-new language takes
+                  this slot when UTC rolls past midnight; until then, brag below.
+                </p>
+              }
+            />
+            {rows.length > 0 ? (
+              <motion.div
+                initial={{ opacity: 0, y: 16 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: 0.5, duration: 0.45, ease: [0.22, 1, 0.36, 1] }}
+                className="mt-6 border-t border-[var(--line)] pt-6"
+              >
+                <LangShareButton dateKey={dateKey} rowsNewestFirst={rows} />
+              </motion.div>
+            ) : null}
           </div>
-        ) : null}
+        ) : (
+          <>
+            <p className="text-xs font-medium uppercase tracking-[0.14em] text-[var(--muted)]">
+              Guess a language
+            </p>
+            <div className="relative mt-3" ref={wrapRef}>
+              <input
+                value={query}
+                disabled={solved || exhausted}
+                onChange={(e) => {
+                  setQuery(e.target.value);
+                  setOpen(true);
+                }}
+                onFocus={() => setOpen(true)}
+                placeholder="Search (e.g. Rust, Erlang)…"
+                className="w-full rounded-md border border-[var(--line)] bg-[var(--bg-input)] px-4 py-3 text-sm text-[var(--fg)] outline-none transition-[border-color,box-shadow] placeholder:text-[var(--muted2)] focus:border-[color-mix(in_srgb,var(--accent)_55%,var(--line))] focus:shadow-[0_0_0_2px_color-mix(in_srgb,var(--accent)_12%,transparent)] disabled:opacity-50"
+              />
+              {open && !solved && !exhausted ? (
+                <ul className="absolute z-20 mt-2 max-h-56 w-full overflow-auto rounded-md border border-[var(--line)] bg-[var(--bg-raised)] py-1 shadow-lg shadow-black/40">
+                  {filtered.map((l) => (
+                    <li key={l.id}>
+                      <button
+                        type="button"
+                        onMouseDown={(e) => e.preventDefault()}
+                        onClick={() => pick(l.id)}
+                        className="flex w-full px-4 py-2.5 text-left text-sm text-[var(--fg)] hover:bg-[color-mix(in_srgb,var(--fg)_6%,transparent)]"
+                      >
+                        {l.name}
+                      </button>
+                    </li>
+                  ))}
+                  {filtered.length === 0 ? (
+                    <li className="px-4 py-3 text-sm text-[var(--muted)]">
+                      No match
+                    </li>
+                  ) : null}
+                </ul>
+              ) : null}
+            </div>
+            {error ? (
+              <p className="mt-2 text-sm text-[var(--bad)]">{error}</p>
+            ) : null}
+            <p className="mt-3 text-xs text-[var(--muted2)]">
+              {exhausted
+                ? "Out of guesses."
+                : `${6 - rows.length} guesses left`}
+            </p>
+          </>
+        )}
       </div>
 
       <div className="space-y-3">
@@ -185,10 +222,26 @@ export function LangGame({
             <motion.div
               key={r.guess.id}
               layout
-              initial={{ opacity: 0, y: 14 }}
-              animate={{ opacity: 1, y: 0 }}
+              initial={
+                r.solved
+                  ? { opacity: 0, y: -28, scale: 0.92 }
+                  : { opacity: 0, y: 14 }
+              }
+              animate={{ opacity: 1, y: 0, scale: 1 }}
               exit={{ opacity: 0 }}
-              className="space-y-2"
+              transition={
+                r.solved
+                  ? { type: "spring", stiffness: 420, damping: 24, delay: 0.06 }
+                  : {
+                      duration: 0.28,
+                      layout: { type: "spring", stiffness: 320, damping: 30 },
+                    }
+              }
+              className={
+                r.solved
+                  ? "space-y-2 rounded-lg bg-[color-mix(in_srgb,var(--good)_8%,transparent)] p-3 ring-1 ring-[var(--good-border)]"
+                  : "space-y-2"
+              }
             >
               <p className="font-medium text-xs text-[var(--muted)]">
                 {r.guess.name}
@@ -231,13 +284,17 @@ export function LangGame({
         </AnimatePresence>
       </div>
 
-      {solved || exhausted ? (
-        <div className="flex justify-center">
+      {exhausted && !solved ? (
+        <div className="flex flex-col items-center gap-6">
+          <NextGameButton
+            href={nextGameAfterLang.href}
+            gameTitle={nextGameAfterLang.title}
+          />
           <DailyCommunityStats
             dateKey={dateKey}
             game="lang"
             kind="lang"
-            userScore={solved && rows.length > 0 ? rows.length : 0}
+            userScore={0}
           />
         </div>
       ) : null}

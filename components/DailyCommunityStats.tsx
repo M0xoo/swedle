@@ -100,17 +100,26 @@ function DistributionLine({
   );
 }
 
+const shellStandalone =
+  "mt-6 w-full max-w-sm border-t border-[var(--line)] pt-5 text-left";
+const shellEmbedded =
+  "w-full border-b border-[var(--line)] pb-5 mb-6 text-left";
+
 export function DailyCommunityStats({
   dateKey,
   game,
   kind,
   userScore,
+  /** Tighter layout inside another panel (e.g. Langdle share card). */
+  embedded = false,
 }: {
   dateKey: string;
   game: StatsGame;
   kind: "quiz" | "lang";
   userScore: number;
+  embedded?: boolean;
 }) {
+  const shell = embedded ? shellEmbedded : shellStandalone;
   const [solvers, setSolvers] = useState<number | null>(null);
   const [buckets, setBuckets] = useState<number[] | null>(null);
   const [visible, setVisible] = useState(false);
@@ -171,7 +180,7 @@ export function DailyCommunityStats({
 
   if (offReason) {
     return (
-      <div className="mt-6 w-full max-w-sm border-t border-[var(--line)] pt-5 text-left">
+      <div className={shell}>
         <p className="font-mono-ui text-[10px] uppercase tracking-[0.18em] text-[var(--muted)]">
           Community stats
         </p>
@@ -195,7 +204,7 @@ export function DailyCommunityStats({
       : ["0", "1", "2", "3", "4", "5"];
 
   return (
-    <div className="mt-6 w-full max-w-sm border-t border-[var(--line)] pt-5 text-left">
+    <div className={shell}>
       <p className="font-mono-ui text-[10px] uppercase tracking-[0.18em] text-[var(--muted)]">
         Today&apos;s players
       </p>

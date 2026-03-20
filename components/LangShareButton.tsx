@@ -3,11 +3,13 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { XShareButton } from "react-share";
+import { DailyCommunityStats } from "@/components/DailyCommunityStats";
+import { NextGameButton } from "@/components/NextGameButton";
+import { nextGameAfterLang } from "@/lib/game-nav";
 import {
   buildLangShareMessage,
   buildLangXShareIntentTitle,
   LANG_SHARE_CELL_KEYS,
-  langGuessToShareRow,
 } from "@/lib/lang-share";
 import type { LangGuessResult } from "@/lib/games/language";
 import type { FeedbackTone } from "@/lib/types";
@@ -115,52 +117,68 @@ export function LangShareButton({
 
   return (
     <div className="space-y-4">
-      <div>
-        <p className="font-mono-ui text-[10px] uppercase tracking-[0.16em] text-[var(--muted2)]">
-          Share
-        </p>
-        <div className="mt-2 grid grid-cols-2 gap-2 sm:gap-3">
-          {pageUrl ? (
-            <>
-              <XShareButton
-                resetButtonStyle={false}
-                url={pageUrl}
-                title={xIntentTitle}
-                hashtags={["SWEDLE"]}
-                related={[]}
-                className={xBtnClass}
-                aria-label="Post result on X"
-              >
-                <svg
-                  aria-hidden
-                  className="h-4 w-4 shrink-0"
-                  viewBox="0 0 24 24"
-                  fill="currentColor"
+      <div className="panel space-y-4 p-4">
+        <div>
+          <p className="font-mono-ui text-[10px] uppercase tracking-[0.16em] text-[var(--muted2)]">
+            Share
+          </p>
+          <div className="mt-2 grid grid-cols-2 gap-2 sm:gap-3">
+            {pageUrl ? (
+              <>
+                <XShareButton
+                  resetButtonStyle={false}
+                  url={pageUrl}
+                  title={xIntentTitle}
+                  hashtags={["SWEDLE"]}
+                  related={[]}
+                  className={xBtnClass}
+                  aria-label="Post result on X"
                 >
-                  <path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z" />
-                </svg>
-                <span className="whitespace-nowrap">Post on X</span>
-              </XShareButton>
-              <button type="button" onClick={copyText} className={copyBtnClass}>
-                <span className="whitespace-nowrap">Copy text</span>
-              </button>
-            </>
-          ) : (
-            <>
-              <div
-                className="min-h-[2.75rem] animate-pulse rounded-md bg-[color-mix(in_srgb,var(--fg)_10%,transparent)]"
-                aria-hidden
-              />
-              <div
-                className="min-h-[2.75rem] animate-pulse rounded-md bg-[color-mix(in_srgb,var(--fg)_6%,transparent)]"
-                aria-hidden
-              />
-            </>
-          )}
+                  <svg
+                    aria-hidden
+                    className="h-4 w-4 shrink-0"
+                    viewBox="0 0 24 24"
+                    fill="currentColor"
+                  >
+                    <path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z" />
+                  </svg>
+                  <span className="whitespace-nowrap">Post on X</span>
+                </XShareButton>
+                <button type="button" onClick={copyText} className={copyBtnClass}>
+                  <span className="whitespace-nowrap">Copy text</span>
+                </button>
+              </>
+            ) : (
+              <>
+                <div
+                  className="min-h-[2.75rem] animate-pulse rounded-md bg-[color-mix(in_srgb,var(--fg)_10%,transparent)]"
+                  aria-hidden
+                />
+                <div
+                  className="min-h-[2.75rem] animate-pulse rounded-md bg-[color-mix(in_srgb,var(--fg)_6%,transparent)]"
+                  aria-hidden
+                />
+              </>
+            )}
+          </div>
+        </div>
+
+        <div className="flex justify-center border-t border-[var(--line)] pt-4">
+          <NextGameButton
+            href={nextGameAfterLang.href}
+            gameTitle={nextGameAfterLang.title}
+          />
         </div>
       </div>
 
       <div className="panel p-4">
+        <DailyCommunityStats
+          embedded
+          dateKey={dateKey}
+          game="lang"
+          kind="lang"
+          userScore={chronological.length}
+        />
         <p className="font-mono-ui text-[10px] uppercase tracking-[0.16em] text-[var(--muted2)]">
           Your clues
         </p>
@@ -169,16 +187,6 @@ export function LangShareButton({
           {chronological.map((r, i) => (
             <ShareRowVisual key={`${r.guess.id}-${i}`} r={r} index={i} />
           ))}
-        </div>
-        <div className="mt-4 border-t border-[var(--line)] pt-3">
-          <p className="mb-2 text-[10px] uppercase tracking-[0.14em] text-[var(--muted2)]">
-            Emoji (same as X / clipboard)
-          </p>
-          <div className="space-y-1 font-mono-ui text-[12px] leading-6 tracking-wide text-[var(--muted)]">
-            {chronological.map((r, i) => (
-              <div key={`emoji-${r.guess.id}-${i}`}>{langGuessToShareRow(r)}</div>
-            ))}
-          </div>
         </div>
       </div>
 
@@ -200,7 +208,7 @@ export function LangShareButton({
             exit={{ opacity: 0 }}
             className="text-center text-xs text-[var(--bad)]"
           >
-            Could not copy — try the emoji lines above
+            Could not copy — try Post on X or another device
           </motion.p>
         ) : null}
       </AnimatePresence>
