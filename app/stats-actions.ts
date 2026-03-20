@@ -28,7 +28,7 @@ function warnStatsGateOnce(
 
 function validateQuizScore(
   dateKey: string,
-  game: Exclude<StatsGame, "lang">,
+  game: Exclude<StatsGame, "lang" | "reveal">,
   score: number,
 ): boolean {
   if (!Number.isInteger(score)) return false;
@@ -52,7 +52,7 @@ function validateQuizScore(
   return n > 0 && score >= 0 && score <= n;
 }
 
-function validateLangScore(score: number): boolean {
+function validateLangLikeScore(score: number): boolean {
   return Number.isInteger(score) && score >= 0 && score <= 6;
 }
 
@@ -68,13 +68,13 @@ export async function recordDailyCompletion(
     return { ok: false, error: "unconfigured" };
   }
   try {
-    if (game === "lang") {
-      if (!validateLangScore(score)) {
+    if (game === "lang" || game === "reveal") {
+      if (!validateLangLikeScore(score)) {
         statsLog("recordDailyCompletion rejected", {
           dateKey,
           game,
           score,
-          reason: "invalid_lang_score",
+          reason: "invalid_lang_like_score",
         });
         return { ok: false, error: "invalid" };
       }
@@ -135,7 +135,7 @@ export async function getDailyStats(
     });
     return {
       enabled: true,
-      kind: game === "lang" ? "lang" : "quiz",
+      kind: game === "lang" || game === "reveal" ? "lang" : "quiz",
       solvers,
       buckets,
     };

@@ -25,8 +25,8 @@ export default function Home() {
             SWEDLE
           </h1>
           <p className="max-w-md text-[1.05rem] leading-relaxed text-[var(--muted)]">
-            Five daily puzzles built for engineers—guess a language, bracket
-            repos and IPOs, drill Big‑O, and place tech milestones in time. A
+            Six daily puzzles for engineers—Langdle, a growing code snippet,
+            then bracket repos and IPOs, Big‑O, and tech milestones in time. A
             new set at UTC midnight; no account.
           </p>
           <div className="text-sm">

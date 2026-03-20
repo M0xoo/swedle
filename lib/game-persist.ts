@@ -1,7 +1,9 @@
 import type { LangGuessResult } from "@/lib/games/language";
+import type { SnippetGuessResult } from "@/lib/games/reveal";
 
 const QUIZ_V = 1;
 const LANG_V = 1;
+const REVEAL_V = 1;
 
 function quizKey(dateKey: string, game: string) {
   return `swedle:quiz:v${QUIZ_V}:${dateKey}:${game}`;
@@ -9,6 +11,10 @@ function quizKey(dateKey: string, game: string) {
 
 function langKey(dateKey: string) {
   return `swedle:lang:v${LANG_V}:${dateKey}`;
+}
+
+function revealKey(dateKey: string) {
+  return `swedle:reveal:v${REVEAL_V}:${dateKey}`;
 }
 
 type QuizPayload = {
@@ -20,6 +26,11 @@ type QuizPayload = {
 type LangPayload = {
   v: number;
   rows: LangGuessResult[];
+};
+
+type RevealPayload = {
+  v: number;
+  rows: SnippetGuessResult[];
 };
 
 export function loadQuizProgress(
@@ -75,4 +86,26 @@ export function saveLangProgress(dateKey: string, rows: LangGuessResult[]) {
   if (typeof window === "undefined") return;
   const payload: LangPayload = { v: LANG_V, rows };
   localStorage.setItem(langKey(dateKey), JSON.stringify(payload));
+}
+
+export function loadRevealProgress(dateKey: string): SnippetGuessResult[] | null {
+  if (typeof window === "undefined") return null;
+  try {
+    const raw = localStorage.getItem(revealKey(dateKey));
+    if (!raw) return null;
+    const p = JSON.parse(raw) as RevealPayload;
+    if (p.v !== REVEAL_V || !Array.isArray(p.rows)) return null;
+    return p.rows;
+  } catch {
+    return null;
+  }
+}
+
+export function saveRevealProgress(
+  dateKey: string,
+  rows: SnippetGuessResult[],
+) {
+  if (typeof window === "undefined") return;
+  const payload: RevealPayload = { v: REVEAL_V, rows };
+  localStorage.setItem(revealKey(dateKey), JSON.stringify(payload));
 }

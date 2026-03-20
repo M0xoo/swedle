@@ -1,5 +1,6 @@
 "use server";
 
+import { languageById } from "@/lib/data";
 import { getDailyComplexity } from "@/lib/games/complexity";
 import {
   evaluateLanguageGuess,
@@ -8,10 +9,25 @@ import {
 import { getDailyIpoQuiz } from "@/lib/games/ipos";
 import { getDailyStarBattle } from "@/lib/games/stars";
 import { getDailyTimeline } from "@/lib/games/timeline";
+import {
+  evaluateRevealGuess,
+  getDailyRevealSnippet,
+} from "@/lib/games/reveal";
 
 export async function submitLanguageGuess(dateKey: string, guessId: string) {
   const secret = getDailyLanguage(dateKey);
   return evaluateLanguageGuess(secret, guessId);
+}
+
+export async function submitRevealGuess(dateKey: string, guessId: string) {
+  const s = getDailyRevealSnippet(dateKey);
+  return evaluateRevealGuess(s.languageId, guessId);
+}
+
+export async function getRevealAnswer(dateKey: string) {
+  const s = getDailyRevealSnippet(dateKey);
+  const lang = languageById(s.languageId);
+  return { id: s.languageId, name: lang?.name ?? s.languageId };
 }
 
 export async function submitStarPick(

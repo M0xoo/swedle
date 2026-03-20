@@ -17,6 +17,11 @@ export function nextGameAfterQuiz(variant: QuizEndVariant): {
 }
 
 export const nextGameAfterLang = {
+  href: "/reveal",
+  title: GAME_DISPLAY_TITLE.reveal,
+} as const;
+
+export const nextGameAfterReveal = {
   href: "/stars",
   title: GAME_DISPLAY_TITLE.stars,
 } as const;

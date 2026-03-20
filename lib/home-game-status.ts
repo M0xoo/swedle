@@ -1,4 +1,8 @@
-import { loadLangProgress, loadQuizProgress } from "@/lib/game-persist";
+import {
+  loadLangProgress,
+  loadQuizProgress,
+  loadRevealProgress,
+} from "@/lib/game-persist";
 import type { HomeGamePersistId } from "@/lib/home-games";
 import { QUIZ_ROUND_COUNT, readScore } from "@/lib/score";
 
@@ -8,8 +12,13 @@ export type HomeGameTileStatus =
       state: "done";
       /** Short score line for the card, e.g. "4/5" or "3/6" */
       scoreLabel: string;
-      /** Langdle solved vs missed; quizzes use "quiz" */
-      kind: "lang-solved" | "lang-missed" | "quiz";
+      /** Lang / Reveal guess games vs quiz points */
+      kind:
+        | "lang-solved"
+        | "lang-missed"
+        | "reveal-solved"
+        | "reveal-missed"
+        | "quiz";
     };
 
 function langStatus(dateKey: string): HomeGameTileStatus {
@@ -26,6 +35,22 @@ function langStatus(dateKey: string): HomeGameTileStatus {
     };
   }
   return { state: "done", scoreLabel: "Missed", kind: "lang-missed" };
+}
+
+function revealStatus(dateKey: string): HomeGameTileStatus {
+  const rows = loadRevealProgress(dateKey);
+  if (!rows?.length) return { state: "idle" };
+  const solved = rows.some((r) => r.solved);
+  const exhausted = rows.length >= 6;
+  if (!solved && !exhausted) return { state: "idle" };
+  if (solved) {
+    return {
+      state: "done",
+      scoreLabel: `${rows.length}/6`,
+      kind: "reveal-solved",
+    };
+  }
+  return { state: "done", scoreLabel: "Missed", kind: "reveal-missed" };
 }
 
 function quizStatus(
@@ -49,5 +74,6 @@ export function getHomeGameTileStatus(
   if (typeof window === "undefined") return { state: "idle" };
 
   if (id === "lang") return langStatus(dateKey);
+  if (id === "reveal") return revealStatus(dateKey);
   return quizStatus(dateKey, id);
 }

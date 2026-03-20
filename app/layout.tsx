@@ -40,6 +40,7 @@ export const metadata: Metadata = {
     "Wordle for programmers",
     "programming language quiz",
     "Langdle",
+    "code snippet guessing game",
     "GitHub stars game",
     "Big O notation quiz",
     "software engineer trivia",

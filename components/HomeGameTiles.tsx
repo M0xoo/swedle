@@ -20,9 +20,9 @@ function collectStatuses(
 
 function DoneLeft({ status }: { status: Exclude<HomeGameTileStatus, { state: "idle" }> }) {
   const scoreClass =
-    status.kind === "lang-solved"
+    status.kind === "lang-solved" || status.kind === "reveal-solved"
       ? "text-[var(--good)]"
-      : status.kind === "lang-missed"
+      : status.kind === "lang-missed" || status.kind === "reveal-missed"
         ? "text-[var(--muted)]"
         : "text-[var(--accent-bright)]";
 
@@ -64,22 +64,29 @@ export function HomeGameTiles({
     };
   }, [dateKey, games]);
 
-  const langGame = useMemo(
-    () => games.find((g) => g.persistId === "lang"),
-    [games],
+  const topRowIds = useMemo(
+    () => new Set<HomeGameEntry["persistId"]>(["lang", "reveal"]),
+    [],
+  );
+  const topGames = useMemo(
+    () => games.filter((g) => topRowIds.has(g.persistId)),
+    [games, topRowIds],
   );
   const quizGames = useMemo(
-    () => games.filter((g) => g.persistId !== "lang"),
-    [games],
+    () => games.filter((g) => !topRowIds.has(g.persistId)),
+    [games, topRowIds],
   );
 
-  function tileLink(g: HomeGameEntry, colSpanFull: boolean) {
+  function tileLink(
+    g: HomeGameEntry,
+    opts: { fullWidth: boolean; sectionBottomSpacer: boolean },
+  ) {
     const s = statuses[g.href] ?? { state: "idle" as const };
     return (
       <Link
         key={g.href}
         href={g.href}
-        className={`game-tile group flex flex-col ${colSpanFull ? "mb-5 sm:col-span-2 sm:mb-6" : ""}`}
+        className={`game-tile group flex flex-col ${opts.fullWidth ? "sm:col-span-2" : ""} ${opts.sectionBottomSpacer ? "mb-5 sm:mb-6" : ""}`}
       >
         <h2 className="font-display text-lg font-medium text-[var(--fg)] group-hover:text-[var(--accent-bright)]">
           {g.title}
@@ -101,14 +108,21 @@ export function HomeGameTiles({
 
   return (
     <>
-      {langGame ? tileLink(langGame, true) : null}
+      {topGames.map((g, i) =>
+        tileLink(g, {
+          fullWidth: true,
+          sectionBottomSpacer: i === topGames.length - 1,
+        }),
+      )}
 
       <div className="flex flex-wrap items-baseline gap-x-3 gap-y-1 text-sm sm:col-span-2">
         <span className="text-[var(--muted2)]">Quiz points</span>
         <HubTotal dateKey={dateKey} />
       </div>
 
-      {quizGames.map((g) => tileLink(g, false))}
+      {quizGames.map((g) =>
+        tileLink(g, { fullWidth: false, sectionBottomSpacer: false }),
+      )}
     </>
   );
 }

@@ -2,6 +2,7 @@ import { GAME_DISPLAY_TITLE } from "@/lib/game-titles";
 
 export type HomeGamePersistId =
   | "lang"
+  | "reveal"
   | "stars"
   | "ipo"
   | "complexity"
@@ -21,6 +22,13 @@ export const HOME_GAMES: HomeGameEntry[] = [
     blurb:
       "Guess the language from paradigm, platforms, year, and more — green means exact, orange means close.",
     persistId: "lang",
+  },
+  {
+    href: "/reveal",
+    title: GAME_DISPLAY_TITLE.reveal,
+    blurb:
+      "A code snippet hides in the shadows — wrong guesses pull back the curtain until you name the language.",
+    persistId: "reveal",
   },
   {
     href: "/stars",
