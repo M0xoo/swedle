@@ -1,0 +1,74 @@
+[
+  {
+    "id": "git-docker",
+    "left": "First Git release",
+    "leftYear": 2005,
+    "right": "Docker open-sourced",
+    "rightYear": 2013,
+    "earlier": "left"
+  },
+  {
+    "id": "www-java",
+    "left": "World Wide Web announced",
+    "leftYear": 1991,
+    "right": "Java 1.0 shipped",
+    "rightYear": 1996,
+    "earlier": "left"
+  },
+  {
+    "id": "iphone-android",
+    "left": "First iPhone",
+    "leftYear": 2007,
+    "right": "First Android device (HTC Dream)",
+    "rightYear": 2008,
+    "earlier": "left"
+  },
+  {
+    "id": "k8s-lambda",
+    "left": "Kubernetes 1.0 release",
+    "leftYear": 2015,
+    "right": "AWS Lambda announced",
+    "rightYear": 2014,
+    "earlier": "right"
+  },
+  {
+    "id": "linux-windows95",
+    "left": "Linux 1.0",
+    "leftYear": 1994,
+    "right": "Windows 95 launch",
+    "rightYear": 1995,
+    "earlier": "left"
+  },
+  {
+    "id": "graphql-ts",
+    "left": "GraphQL public at Facebook",
+    "leftYear": 2015,
+    "right": "TypeScript 2.0",
+    "rightYear": 2016,
+    "earlier": "left"
+  },
+  {
+    "id": "react-vue",
+    "left": "React open-sourced",
+    "leftYear": 2013,
+    "right": "Vue.js first release",
+    "rightYear": 2014,
+    "earlier": "left"
+  },
+  {
+    "id": "agile-manifesto",
+    "left": "Agile Manifesto",
+    "leftYear": 2001,
+    "right": "Scrum Guide first edition",
+    "rightYear": 2010,
+    "earlier": "left"
+  },
+  {
+    "id": "xml-json",
+    "left": "XML 1.0 becomes a W3C Recommendation",
+    "leftYear": 1998,
+    "right": "JSON described (Douglas Crockford)",
+    "rightYear": 2001,
+    "earlier": "left"
+  }
+]

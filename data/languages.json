@@ -1,0 +1,362 @@
+[
+  {
+    "id": "rust",
+    "name": "Rust",
+    "paradigm": "multi",
+    "paradigms": ["multi", "functional", "oop"],
+    "openSource": true,
+    "execution": "compiled",
+    "platforms": ["linux", "windows", "macos"],
+    "year": 2010
+  },
+  {
+    "id": "go",
+    "name": "Go",
+    "paradigm": "procedural",
+    "paradigms": ["procedural", "oop"],
+    "openSource": true,
+    "execution": "compiled",
+    "platforms": ["linux", "windows", "macos"],
+    "year": 2009
+  },
+  {
+    "id": "typescript",
+    "name": "TypeScript",
+    "paradigm": "multi",
+    "paradigms": ["multi", "oop", "functional"],
+    "openSource": true,
+    "execution": "hybrid",
+    "platforms": ["linux", "windows", "macos"],
+    "year": 2012
+  },
+  {
+    "id": "python",
+    "name": "Python",
+    "paradigm": "multi",
+    "paradigms": ["multi", "oop", "functional", "procedural"],
+    "openSource": true,
+    "execution": "interpreted",
+    "platforms": ["linux", "windows", "macos"],
+    "year": 1991
+  },
+  {
+    "id": "java",
+    "name": "Java",
+    "paradigm": "oop",
+    "paradigms": ["oop"],
+    "openSource": true,
+    "execution": "hybrid",
+    "platforms": ["linux", "windows", "macos"],
+    "year": 1995
+  },
+  {
+    "id": "csharp",
+    "name": "C#",
+    "paradigm": "multi",
+    "paradigms": ["multi", "oop", "functional"],
+    "openSource": true,
+    "execution": "hybrid",
+    "platforms": ["linux", "windows", "macos"],
+    "year": 2000
+  },
+  {
+    "id": "cpp",
+    "name": "C++",
+    "paradigm": "multi",
+    "paradigms": ["multi", "oop", "procedural"],
+    "openSource": true,
+    "execution": "compiled",
+    "platforms": ["linux", "windows", "macos"],
+    "year": 1985
+  },
+  {
+    "id": "c",
+    "name": "C",
+    "paradigm": "procedural",
+    "paradigms": ["procedural"],
+    "openSource": true,
+    "execution": "compiled",
+    "platforms": ["linux", "windows", "macos"],
+    "year": 1972
+  },
+  {
+    "id": "javascript",
+    "name": "JavaScript",
+    "paradigm": "multi",
+    "paradigms": ["multi", "functional", "oop", "procedural"],
+    "openSource": true,
+    "execution": "interpreted",
+    "platforms": ["linux", "windows", "macos"],
+    "year": 1995
+  },
+  {
+    "id": "ruby",
+    "name": "Ruby",
+    "paradigm": "multi",
+    "paradigms": ["multi", "oop", "functional"],
+    "openSource": true,
+    "execution": "interpreted",
+    "platforms": ["linux", "windows", "macos"],
+    "year": 1995
+  },
+  {
+    "id": "php",
+    "name": "PHP",
+    "paradigm": "multi",
+    "paradigms": ["multi", "oop", "procedural"],
+    "openSource": true,
+    "execution": "interpreted",
+    "platforms": ["linux", "windows", "macos"],
+    "year": 1995
+  },
+  {
+    "id": "swift",
+    "name": "Swift",
+    "paradigm": "multi",
+    "paradigms": ["multi", "oop", "functional"],
+    "openSource": true,
+    "execution": "compiled",
+    "platforms": ["linux", "windows", "macos"],
+    "year": 2014
+  },
+  {
+    "id": "kotlin",
+    "name": "Kotlin",
+    "paradigm": "multi",
+    "paradigms": ["multi", "oop", "functional"],
+    "openSource": true,
+    "execution": "hybrid",
+    "platforms": ["linux", "windows", "macos"],
+    "year": 2011
+  },
+  {
+    "id": "scala",
+    "name": "Scala",
+    "paradigm": "multi",
+    "paradigms": ["multi", "functional", "oop"],
+    "openSource": true,
+    "execution": "hybrid",
+    "platforms": ["linux", "windows", "macos"],
+    "year": 2004
+  },
+  {
+    "id": "haskell",
+    "name": "Haskell",
+    "paradigm": "functional",
+    "paradigms": ["functional"],
+    "openSource": true,
+    "execution": "compiled",
+    "platforms": ["linux", "windows", "macos"],
+    "year": 1990
+  },
+  {
+    "id": "elixir",
+    "name": "Elixir",
+    "paradigm": "functional",
+    "paradigms": ["functional", "multi"],
+    "openSource": true,
+    "execution": "interpreted",
+    "platforms": ["linux", "windows", "macos"],
+    "year": 2011
+  },
+  {
+    "id": "erlang",
+    "name": "Erlang",
+    "paradigm": "functional",
+    "paradigms": ["functional", "procedural"],
+    "openSource": true,
+    "execution": "interpreted",
+    "platforms": ["linux", "windows", "macos"],
+    "year": 1986
+  },
+  {
+    "id": "clojure",
+    "name": "Clojure",
+    "paradigm": "functional",
+    "paradigms": ["functional"],
+    "openSource": true,
+    "execution": "interpreted",
+    "platforms": ["linux", "windows", "macos"],
+    "year": 2007
+  },
+  {
+    "id": "fsharp",
+    "name": "F#",
+    "paradigm": "functional",
+    "paradigms": ["functional", "oop"],
+    "openSource": true,
+    "execution": "hybrid",
+    "platforms": ["linux", "windows", "macos"],
+    "year": 2005
+  },
+  {
+    "id": "dart",
+    "name": "Dart",
+    "paradigm": "oop",
+    "paradigms": ["oop", "functional"],
+    "openSource": true,
+    "execution": "hybrid",
+    "platforms": ["linux", "windows", "macos"],
+    "year": 2011
+  },
+  {
+    "id": "lua",
+    "name": "Lua",
+    "paradigm": "multi",
+    "paradigms": ["multi", "functional", "procedural", "oop"],
+    "openSource": true,
+    "execution": "interpreted",
+    "platforms": ["linux", "windows", "macos"],
+    "year": 1993
+  },
+  {
+    "id": "perl",
+    "name": "Perl",
+    "paradigm": "multi",
+    "paradigms": ["multi", "procedural", "functional", "oop"],
+    "openSource": true,
+    "execution": "interpreted",
+    "platforms": ["linux", "windows", "macos"],
+    "year": 1987
+  },
+  {
+    "id": "r",
+    "name": "R",
+    "paradigm": "multi",
+    "paradigms": ["multi", "functional", "oop", "procedural"],
+    "openSource": true,
+    "execution": "interpreted",
+    "platforms": ["linux", "windows", "macos"],
+    "year": 1993
+  },
+  {
+    "id": "matlab",
+    "name": "MATLAB",
+    "paradigm": "multi",
+    "paradigms": ["multi", "oop", "functional", "procedural"],
+    "openSource": false,
+    "execution": "interpreted",
+    "platforms": ["linux", "windows", "macos"],
+    "year": 1984
+  },
+  {
+    "id": "objectivec",
+    "name": "Objective-C",
+    "paradigm": "oop",
+    "paradigms": ["oop", "procedural"],
+    "openSource": true,
+    "execution": "compiled",
+    "platforms": ["linux", "windows", "macos"],
+    "year": 1984
+  },
+  {
+    "id": "zig",
+    "name": "Zig",
+    "paradigm": "procedural",
+    "paradigms": ["procedural", "functional"],
+    "openSource": true,
+    "execution": "compiled",
+    "platforms": ["linux", "windows", "macos"],
+    "year": 2016
+  },
+  {
+    "id": "nim",
+    "name": "Nim",
+    "paradigm": "multi",
+    "paradigms": ["multi", "procedural", "functional", "oop"],
+    "openSource": true,
+    "execution": "compiled",
+    "platforms": ["linux", "windows", "macos"],
+    "year": 2008
+  },
+  {
+    "id": "julia",
+    "name": "Julia",
+    "paradigm": "multi",
+    "paradigms": ["multi", "functional", "oop", "procedural"],
+    "openSource": true,
+    "execution": "hybrid",
+    "platforms": ["linux", "windows", "macos"],
+    "year": 2012
+  },
+  {
+    "id": "ocaml",
+    "name": "OCaml",
+    "paradigm": "multi",
+    "paradigms": ["multi", "functional", "oop"],
+    "openSource": true,
+    "execution": "compiled",
+    "platforms": ["linux", "windows", "macos"],
+    "year": 1996
+  },
+  {
+    "id": "fortran",
+    "name": "Fortran",
+    "paradigm": "multi",
+    "paradigms": ["multi", "procedural", "oop"],
+    "openSource": true,
+    "execution": "compiled",
+    "platforms": ["linux", "windows", "macos"],
+    "year": 1957
+  },
+  {
+    "id": "cobol",
+    "name": "COBOL",
+    "paradigm": "procedural",
+    "paradigms": ["procedural", "oop"],
+    "openSource": false,
+    "execution": "compiled",
+    "platforms": ["linux", "windows", "macos"],
+    "year": 1959
+  },
+  {
+    "id": "vbnet",
+    "name": "VB.NET",
+    "paradigm": "oop",
+    "paradigms": ["oop", "functional"],
+    "openSource": true,
+    "execution": "hybrid",
+    "platforms": ["windows"],
+    "year": 2002
+  },
+  {
+    "id": "powershell",
+    "name": "PowerShell",
+    "paradigm": "multi",
+    "paradigms": ["multi", "oop", "functional", "procedural"],
+    "openSource": true,
+    "execution": "interpreted",
+    "platforms": ["linux", "windows", "macos"],
+    "year": 2006
+  },
+  {
+    "id": "bash",
+    "name": "Bash",
+    "paradigm": "procedural",
+    "paradigms": ["procedural"],
+    "openSource": true,
+    "execution": "interpreted",
+    "platforms": ["linux", "macos"],
+    "year": 1989
+  },
+  {
+    "id": "solidity",
+    "name": "Solidity",
+    "paradigm": "oop",
+    "paradigms": ["oop"],
+    "openSource": true,
+    "execution": "compiled",
+    "platforms": ["linux", "windows", "macos"],
+    "year": 2014
+  },
+  {
+    "id": "sql",
+    "name": "SQL (ANSI)",
+    "paradigm": "declarative",
+    "paradigms": ["declarative"],
+    "openSource": true,
+    "execution": "interpreted",
+    "platforms": ["linux", "windows", "macos"],
+    "year": 1974
+  }
+]

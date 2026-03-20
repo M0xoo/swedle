@@ -1,0 +1,19 @@
+[
+  { "id": "snowflake", "company": "Snowflake", "year": 2020, "openingValuationB": 70 },
+  { "id": "airbnb", "company": "Airbnb", "year": 2020, "openingValuationB": 47 },
+  { "id": "uber", "company": "Uber", "year": 2019, "openingValuationB": 75 },
+  { "id": "meta", "company": "Meta (Facebook)", "year": 2012, "openingValuationB": 104 },
+  { "id": "google", "company": "Google", "year": 2004, "openingValuationB": 23 },
+  { "id": "amazon", "company": "Amazon", "year": 1997, "openingValuationB": 0.44 },
+  { "id": "microsoft", "company": "Microsoft", "year": 1986, "openingValuationB": 0.78 },
+  { "id": "netflix", "company": "Netflix", "year": 2002, "openingValuationB": 0.31 },
+  { "id": "shopify", "company": "Shopify", "year": 2015, "openingValuationB": 1.27 },
+  { "id": "doordash", "company": "DoorDash", "year": 2020, "openingValuationB": 39 },
+  { "id": "palantir", "company": "Palantir", "year": 2020, "openingValuationB": 16 },
+  { "id": "coinbase", "company": "Coinbase", "year": 2021, "openingValuationB": 85 },
+  { "id": "crowdstrike", "company": "CrowdStrike", "year": 2019, "openingValuationB": 11 },
+  { "id": "unity", "company": "Unity", "year": 2020, "openingValuationB": 17 },
+  { "id": "slack", "company": "Slack", "year": 2019, "openingValuationB": 19 },
+  { "id": "zoom", "company": "Zoom", "year": 2019, "openingValuationB": 16 },
+  { "id": "servicenow", "company": "ServiceNow", "year": 2012, "openingValuationB": 2.2 }
+]

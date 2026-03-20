@@ -1,0 +1,74 @@
+[
+  {
+    "id": "bs",
+    "prompt": "Binary search on a sorted array of n elements",
+    "choices": ["O(n)", "O(log n)", "O(n log n)"],
+    "answerIndex": 1
+  },
+  {
+    "id": "hash-insert",
+    "prompt": "Insert into a hash map with a good hash (average case)",
+    "choices": ["O(1)", "O(log n)", "O(n)"],
+    "answerIndex": 0
+  },
+  {
+    "id": "dijkstra",
+    "prompt": "Dijkstra's algorithm (binary heap) on a graph with V vertices and E edges",
+    "choices": ["O(V + E)", "O((V + E) log V)", "O(V^2)"],
+    "answerIndex": 1
+  },
+  {
+    "id": "merge-sort",
+    "prompt": "Merge sort on n elements (worst case)",
+    "choices": ["O(n)", "O(n log n)", "O(n^2)"],
+    "answerIndex": 1
+  },
+  {
+    "id": "bfs",
+    "prompt": "Breadth-first search on a graph with V vertices and E edges",
+    "choices": ["O(V + E)", "O(V^2)", "O(E log V)"],
+    "answerIndex": 0
+  },
+  {
+    "id": "fib-naive",
+    "prompt": "Naive recursive Fibonacci(n) without memoization",
+    "choices": ["O(n)", "O(2^n)", "O(n^2)"],
+    "answerIndex": 1
+  },
+  {
+    "id": "union-find",
+    "prompt": "Union-Find with path compression + union by rank (amortized per op)",
+    "choices": ["O(1) amortized", "O(log n)", "O(n)"],
+    "answerIndex": 0
+  },
+  {
+    "id": "quick-worst",
+    "prompt": "Quicksort worst case (pivot always min/max)",
+    "choices": ["O(n log n)", "O(n^2)", "O(n)"],
+    "answerIndex": 1
+  },
+  {
+    "id": "heapify",
+    "prompt": "Build a binary heap from n arbitrary elements (bottom-up)",
+    "choices": ["O(n log n)", "O(n)", "O(n^2)"],
+    "answerIndex": 1
+  },
+  {
+    "id": "two-sum-sort",
+    "prompt": "Two-sum with sorting + two pointers (after O(n log n) sort)",
+    "choices": ["O(n)", "O(n log n)", "O(n^2)"],
+    "answerIndex": 1
+  },
+  {
+    "id": "matrix-mult",
+    "prompt": "Naive matrix multiply n×n",
+    "choices": ["O(n^2)", "O(n^3)", "O(n^log2(7))"],
+    "answerIndex": 1
+  },
+  {
+    "id": "topo",
+    "prompt": "Topological sort (DFS-based) on DAG with V, E",
+    "choices": ["O(V + E)", "O(V^2)", "O(E log V)"],
+    "answerIndex": 0
+  }
+]
