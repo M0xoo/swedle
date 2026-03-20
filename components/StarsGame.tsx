@@ -10,6 +10,7 @@ import { GameEndScreen } from "@/components/GameEndScreen";
 import { PersistHint } from "@/components/PersistHint";
 import { ScorePulse } from "@/components/ScorePulse";
 import { usePersistedQuiz } from "@/hooks/usePersistedQuiz";
+import { GAME_DISPLAY_TITLE } from "@/lib/game-titles";
 
 type Round = { left: RepoEntry; right: RepoEntry };
 
@@ -181,7 +182,7 @@ export function StarsGame({
           <GameEndScreen
             key="fin"
             variant="stars"
-            title="Star Battle"
+            title={GAME_DISPLAY_TITLE.stars}
             noun="hits"
             score={score}
             total={total}

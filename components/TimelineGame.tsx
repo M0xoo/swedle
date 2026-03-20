@@ -9,6 +9,7 @@ import { GameEndScreen } from "@/components/GameEndScreen";
 import { PersistHint } from "@/components/PersistHint";
 import { ScorePulse } from "@/components/ScorePulse";
 import { usePersistedQuiz } from "@/hooks/usePersistedQuiz";
+import { GAME_DISPLAY_TITLE } from "@/lib/game-titles";
 
 type Side = { id: string; label: string; year: number };
 type Row = { left: Side; right: Side };
@@ -177,7 +178,7 @@ export function TimelineGame({
           <GameEndScreen
             key="fin"
             variant="timeline"
-            title="Chrono Commit"
+            title={GAME_DISPLAY_TITLE.timeline}
             noun="hits"
             score={score}
             total={total}

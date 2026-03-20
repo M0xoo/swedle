@@ -3,14 +3,15 @@ import { GameShell } from "@/components/GameShell";
 import { ComplexityGame } from "@/components/ComplexityGame";
 import { getUtcDateKey } from "@/lib/daily";
 import { getDailyComplexity } from "@/lib/games/complexity";
+import { GAME_DISPLAY_TITLE } from "@/lib/game-titles";
 
 export const metadata: Metadata = {
-  title: "Big‑O Blitz",
+  title: GAME_DISPLAY_TITLE.complexity,
   description:
     "Five daily multiple-choice questions on time and space complexity — algorithms and data structures.",
   alternates: { canonical: "/complexity" },
   openGraph: {
-    title: "Big‑O Blitz | SWEDLE",
+    title: `${GAME_DISPLAY_TITLE.complexity} | SWEDLE`,
     url: "/complexity",
   },
 };
@@ -24,7 +25,7 @@ export default function ComplexityPage() {
 
   return (
     <GameShell
-      title="Big‑O Blitz"
+      title={GAME_DISPLAY_TITLE.complexity}
       subtitle="Five multiple-choice bounds — worst case unless the prompt says otherwise."
       dateKey={dateKey}
     >

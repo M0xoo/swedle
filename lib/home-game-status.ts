@@ -1,8 +1,6 @@
 import { loadLangProgress, loadQuizProgress } from "@/lib/game-persist";
 import type { HomeGamePersistId } from "@/lib/home-games";
-import { readScore } from "@/lib/score";
-
-const QUIZ_TOTAL = 5;
+import { QUIZ_ROUND_COUNT, readScore } from "@/lib/score";
 
 export type HomeGameTileStatus =
   | { state: "idle" }
@@ -39,7 +37,7 @@ function quizStatus(
   const score = readScore(dateKey, game);
   return {
     state: "done",
-    scoreLabel: `${score}/${QUIZ_TOTAL}`,
+    scoreLabel: `${score}/${QUIZ_ROUND_COUNT}`,
     kind: "quiz",
   };
 }

@@ -12,6 +12,7 @@ import { GameEndScreen } from "@/components/GameEndScreen";
 import { PersistHint } from "@/components/PersistHint";
 import { ScorePulse } from "@/components/ScorePulse";
 import { usePersistedQuiz } from "@/hooks/usePersistedQuiz";
+import { GAME_DISPLAY_TITLE } from "@/lib/game-titles";
 
 type Round = { left: IpoEntry; right: IpoEntry; mode: IpoMode };
 
@@ -189,7 +190,7 @@ export function IpoGame({
           <GameEndScreen
             key="fin"
             variant="ipo"
-            title="IPO Showdown"
+            title={GAME_DISPLAY_TITLE.ipo}
             noun="hits"
             score={score}
             total={total}

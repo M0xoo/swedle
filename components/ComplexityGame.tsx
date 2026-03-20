@@ -9,6 +9,7 @@ import { GameEndScreen } from "@/components/GameEndScreen";
 import { PersistHint } from "@/components/PersistHint";
 import { ScorePulse } from "@/components/ScorePulse";
 import { usePersistedQuiz } from "@/hooks/usePersistedQuiz";
+import { GAME_DISPLAY_TITLE } from "@/lib/game-titles";
 
 type Q = { prompt: string; choices: [string, string, string] };
 
@@ -105,7 +106,7 @@ export function ComplexityGame({
           <GameEndScreen
             key="fin"
             variant="complexity"
-            title="Big‑O Blitz"
+            title={GAME_DISPLAY_TITLE.complexity}
             noun="hits"
             score={score}
             total={total}

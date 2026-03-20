@@ -3,9 +3,10 @@ import { GameShell } from "@/components/GameShell";
 import { TimelineGame } from "@/components/TimelineGame";
 import { getUtcDateKey } from "@/lib/daily";
 import { getDailyTimeline } from "@/lib/games/timeline";
+import { GAME_DISPLAY_TITLE } from "@/lib/game-titles";
 
 export const metadata: Metadata = {
-  title: "Chrono Commit",
+  title: GAME_DISPLAY_TITLE.timeline,
   description:
     "Which tech milestone happened first? Five daily comparisons — the earlier event keeps the left slot in a running chain.",
   alternates: { canonical: "/timeline" },
@@ -24,7 +25,7 @@ export default function TimelinePage() {
 
   return (
     <GameShell
-      title="Chrono Commit"
+      title={GAME_DISPLAY_TITLE.timeline}
       subtitle="The earlier event keeps the left slot; a new challenger appears on the right each round."
       dateKey={dateKey}
     >
