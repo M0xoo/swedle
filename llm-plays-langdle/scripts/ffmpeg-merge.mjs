@@ -124,9 +124,11 @@ export async function mergeVideoAndWav(videoWebm, audioWav, outMp4) {
   const padV = Math.max(0, target - vDur);
   const padA = Math.max(0, target - aDur);
 
+  // Resample to 48 kHz for AAC; use s16 (not fltp) before the encoder to avoid edge-case
+  // hiss on some ffmpeg/AAC builds.
   const fc = [
     `[0:v]tpad=stop_mode=clone:stop_duration=${padV},format=yuv420p[v]`,
-    `[1:a]apad=pad_dur=${padA},aformat=sample_fmts=fltp:channel_layouts=mono[a]`,
+    `[1:a]apad=pad_dur=${padA},aresample=48000,aformat=sample_fmts=s16:channel_layouts=mono[a]`,
   ].join(";");
 
   await run(FFMPEG_BIN, [
@@ -150,7 +152,9 @@ export async function mergeVideoAndWav(videoWebm, audioWav, outMp4) {
     "-c:a",
     "aac",
     "-b:a",
-    "160k",
+    "192k",
+    "-ar",
+    "48000",
     "-movflags",
     "+faststart",
     "-t",

@@ -1,7 +1,7 @@
 /**
  * Gemini: narration script (Flash) + TTS (preview TTS model) → WAV
  */
-import { mkdir } from "node:fs/promises";
+import { mkdir, writeFile } from "node:fs/promises";
 import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
 import { GoogleGenAI } from "@google/genai";
@@ -30,6 +30,45 @@ function saveWaveFile(filename, pcmData, channels = 1, rate = 24000, sampleWidth
     writer.write(pcmData);
     writer.end();
   });
+}
+
+function isRiffWav(buf) {
+  return (
+    buf.length >= 12 &&
+    buf.toString("ascii", 0, 4) === "RIFF" &&
+    buf.toString("ascii", 8, 12) === "WAVE"
+  );
+}
+
+/**
+ * Gemini TTS often returns a **complete WAV** (RIFF) in inlineData. Writing that
+ * through `wav.FileWriter` prepends a second header and treats bytes as PCM → static / “white noise”,
+ * especially obvious after AAC in MP4.
+ */
+export async function writeGeminiTtsBytesToWavPath(
+  outPath,
+  audioBuffer,
+  mimeType = "",
+) {
+  const mime = String(mimeType || "").toLowerCase();
+  const alreadyWav =
+    mime.includes("wav") || mime.includes("wave") || isRiffWav(audioBuffer);
+  await mkdir(dirname(outPath), { recursive: true });
+  if (alreadyWav) {
+    await writeFile(outPath, audioBuffer);
+    return;
+  }
+  await saveWaveFile(outPath, audioBuffer);
+}
+
+function pickGeminiAudioInline(response) {
+  const parts = response.candidates?.[0]?.content?.parts;
+  if (!Array.isArray(parts)) return null;
+  for (const p of parts) {
+    const id = p.inlineData;
+    if (id?.data) return id;
+  }
+  return null;
 }
 
 function getClient() {
@@ -132,6 +171,20 @@ function extractJsonObject(text) {
 }
 
 /**
+ * Intro + per-turn guess + optional react + outro. No "react" after the winning guess
+ * (solved turn) — voiceover goes straight to outro while the board shows the win.
+ */
+export function buildExpectedNarrationSpec(play) {
+  const spec = [{ phase: "intro", turn: null }];
+  for (const t of play.turns) {
+    spec.push({ phase: "guess", turn: t.turn });
+    if (!t.solved) spec.push({ phase: "react", turn: t.turn });
+  }
+  spec.push({ phase: "outro", turn: null });
+  return spec;
+}
+
+/**
  * Template fallback if JSON generation fails (still one TTS file per beat).
  */
 export function templateNarrationSegments(play) {
@@ -141,7 +194,7 @@ export function templateNarrationSegments(play) {
     id: "00-intro",
     phase: "intro",
     turn: null,
-    text: `Let's play Langdle on SWEDLE — guess today's programming language from the clues. Puzzle date UTC ${play.dateKey}. Here we go.`,
+    text: `Hey — let's play today's Langdle on SWEDLE.`,
   });
   for (const t of play.turns) {
     const gText =
@@ -158,26 +211,28 @@ export function templateNarrationSegments(play) {
       turn: t.turn,
       text: gText,
     });
-    const y =
-      t.yearHint === "up"
-        ? " Secret year is later than my guess."
-        : t.yearHint === "down"
-          ? " Secret year is earlier than my guess."
-          : "";
-    const rHead =
-      t.guessName === "C"
-        ? "For plain C — not C plus plus, not C sharp — "
-        : t.guessName === "C++"
-          ? "For C plus plus — "
-          : t.guessName === "C#"
-            ? "For C sharp — "
-            : `Results for ${t.guessName}: `;
-    segs.push({
-      id: `${String(t.turn).padStart(2, "0")}-react`,
-      phase: "react",
-      turn: t.turn,
-      text: `${rHead}paradigm ${t.cells.paradigm}, open source ${t.cells.openSource}, execution ${t.cells.execution}, platforms ${t.cells.platforms}, year ${t.cells.year}.${y}${t.solved ? " That's the language." : ""}`,
-    });
+    if (!t.solved) {
+      const y =
+        t.yearHint === "up"
+          ? " Secret year is later than my guess."
+          : t.yearHint === "down"
+            ? " Secret year is earlier than my guess."
+            : "";
+      const rHead =
+        t.guessName === "C"
+          ? "For plain C — not C plus plus, not C sharp — "
+          : t.guessName === "C++"
+            ? "For C plus plus — "
+            : t.guessName === "C#"
+              ? "For C sharp — "
+              : `Results for ${t.guessName}: `;
+      segs.push({
+        id: `${String(t.turn).padStart(2, "0")}-react`,
+        phase: "react",
+        turn: t.turn,
+        text: `${rHead}paradigm ${t.cells.paradigm}, open source ${t.cells.openSource}, execution ${t.cells.execution}, platforms ${t.cells.platforms}, year ${t.cells.year}.${y}`,
+      });
+    }
   }
   const outWin =
     secretName === "C"
@@ -205,26 +260,38 @@ export function templateNarrationSegments(play) {
 }
 
 /**
- * Structured segments for per-clip TTS + exact Playwright timing (intro → guess/react ×N → outro).
+ * Structured segments for per-clip TTS + exact Playwright timing (intro → guess + optional react per round → outro; no react after a solved turn).
  * @param {{ dateKey: string, turns: object[], won: boolean, secretName: string, secret: { name: string } }} play
  * @returns {Promise<Array<{ id: string, phase: string, turn: number|null, text: string }>>}
  */
 export async function generateNarrationSegments(play) {
   const n = play.turns.length;
   const turnsBlock = JSON.stringify(play.turns, null, 2);
+  const spec = buildExpectedNarrationSpec(play);
+  const expected = spec.length;
+  const orderHint = spec
+    .map((s, i) => {
+      const t =
+        s.turn == null ? "" : ` turn=${s.turn}`;
+      return `${i}:${s.phase}${t}`;
+    })
+    .join(", ");
+
   const prompt = `You write voiceover for a vertical tech Short. An AI played **Langdle** on **SWEDLE** (Wordle for programming languages: green exact, orange partial, gray miss; year hints up/down).
 
 Return ONLY valid JSON (no markdown fences). Shape:
 {"segments":[{"id":"00-intro","phase":"intro","turn":null,"text":"..."},...]}
 
 STRICT structure:
-1. First segment: phase "intro", turn null. Hook + mention SWEDLE Langdle + UTC date ${play.dateKey}. 2–4 short sentences. Male creator energy.
-2. For each round k = 1..${n}: read \`guessName\` from that round in the JSON below.
+1. First segment: phase "intro", turn null. **Very short:** a quick greeting, then **let's play today's Langdle** (on SWEDLE). One or two brief sentences total — no puzzle rules, no date, no filler. Upbeat male creator.
+2. For each round k = 1..${n} in the data below (each object has \`solved\`):
    - phase "guess", turn k: first person, **about to try** that language. **If guessName is "C"**: you MUST say **plain C** or **classic C** and explicitly say it is **not C plus plus** and **not C sharp**. **If "C++"**: say **C plus plus** (words) or **C++** in text. **If "C#"**: say **C sharp** (words) or **C#**. Never say only "C" when you mean C++ or C#. Never vague "C family". 1–2 sentences.
-   - phase "react", turn k: same **guessName** disambiguation in the first phrase (e.g. "For C plus plus…") then clue colors. Do NOT reveal the secret answer here. 2–5 sentences.
+   - phase "react", turn k: **ONLY if that round has \`"solved": false\`.** Same **guessName** disambiguation in the first phrase, then clue colors. Do NOT reveal the secret answer here. 2–5 sentences.
+   - If that round has \`"solved": true\`, **omit react entirely** — do not narrate the clue row; the win is celebrated in outro only.
 3. Last segment: phase "outro", turn null. Win or loss. If the secret is **C**, **C++**, or **C#**, use the same spoken disambiguation as above when naming the answer. Secret display name: ${play.secretName}. 2–4 sentences.
 
-Total segments = ${1 + 2 * n + 1}. ids must be unique (e.g. 00-intro, 01-guess, 01-react, 02-guess, …, 99-outro).
+Exact segment order (length ${expected}): ${orderHint}
+Total segments MUST be ${expected}. ids must be unique (e.g. 00-intro, 01-guess, 01-react, …, 99-outro).
 
 Rounds data:
 ${turnsBlock}
@@ -279,7 +346,6 @@ Won: ${play.won}`;
       .trim(),
   }));
 
-  const expected = 1 + 2 * n + 1;
   if (cleaned.length !== expected) {
     console.warn(
       `Expected ${expected} segments, got ${cleaned.length}; using template.`,
@@ -287,22 +353,22 @@ Won: ${play.won}`;
     return templateNarrationSegments(play);
   }
 
-  const wantPhases = ["intro"];
-  for (let k = 1; k <= n; k++) {
-    wantPhases.push("guess", "react");
-  }
-  wantPhases.push("outro");
   for (let i = 0; i < cleaned.length; i++) {
-    if (cleaned[i].phase !== wantPhases[i] || !cleaned[i].text) {
+    const want = spec[i];
+    if (cleaned[i].phase !== want.phase || !cleaned[i].text) {
       console.warn(`Segment ${i} phase/text mismatch; using template.`);
       return templateNarrationSegments(play);
     }
-    if (cleaned[i].phase === "guess" || cleaned[i].phase === "react") {
-      const tk = Math.ceil(i / 2);
-      if (cleaned[i].turn !== tk) {
-        console.warn(`Segment ${i} turn mismatch (want ${tk}); using template.`);
+    const wt = want.turn;
+    const ct = cleaned[i].turn;
+    if (wt == null) {
+      if (ct != null) {
+        console.warn(`Segment ${i} turn should be null; using template.`);
         return templateNarrationSegments(play);
       }
+    } else if (ct !== wt) {
+      console.warn(`Segment ${i} turn mismatch (want ${wt}); using template.`);
+      return templateNarrationSegments(play);
     }
   }
 
@@ -310,27 +376,39 @@ Won: ${play.won}`;
   return cleaned;
 }
 
-const TTS_PREFIX = {
+/** Same persona and tone for every clip; prebuilt voice (e.g. Charon) stays consistent. */
+const TTS_VOICE_BASE = `Use one continuous host voice for the whole video: natural adult male, warm, clear, conversational — the same tech Shorts creator in every clip. Keep the same energy, pace, pitch range, and speaking style throughout; do not shift accent, register, or "character" between lines.
+
+`;
+
+const TTS_PHASE_NOTE = {
   intro:
-    "Speak in a natural adult male voice — clear tech YouTuber. This is the cold open.\n\n",
+    "Context: opening line of the same narration. Keep it brief if the script is short.\n\n",
   guess:
-    "Speak in a natural adult male voice — you're talking out loud *before* the guess hits the board; don't imply the clue row is already showing.\n\n",
+    "Context: you are speaking just before the on-screen guess is submitted — do not sound like you are already reading clue results.\n\n",
   react:
-    "Speak in a natural adult male voice — thoughtful, reading puzzle clues. If the script says C plus plus or C sharp or plain C, pronounce those clearly and distinctly.\n\n",
+    "Context: you are speaking after a guess; react to feedback in the script. If it says C plus plus, C sharp, or plain C, pronounce each name distinctly.\n\n",
   outro:
-    "Speak in a natural adult male voice — punchy sign-off.\n\n",
+    "Context: closing line of the same narration.\n\n",
 };
 
 /**
+ * Full TTS instruction text: shared tone + optional phase context + script line.
+ * @param {string} [phase] intro | guess | react | outro
+ */
+export function buildTtsPrompt(plainScript, phase = null) {
+  const note =
+    phase && TTS_PHASE_NOTE[phase] ? TTS_PHASE_NOTE[phase] : "";
+  return `${TTS_VOICE_BASE}${note}${plainScript}`;
+}
+
+/**
  * TTS: male-presenting creator voice (voice name from GEMINI_TTS_VOICE, default Charon).
- * @param {string} [phase] intro | guess | react | outro — tweaks delivery hint
+ * @param {string} [phase] intro | guess | react | outro — only timing/context, not a different tone
  */
 export async function textToSpeechWav(plainScript, outPath, phase = null) {
   const ai = getClient();
-  const prefix =
-    (phase && TTS_PREFIX[phase]) ||
-    "Speak in a natural adult male voice — clear, confident, friendly, like a tech YouTuber or Shorts creator. Conversational pace, not rushed.\n\n";
-  const ttsPrompt = `${prefix}${plainScript}`;
+  const ttsPrompt = buildTtsPrompt(plainScript, phase);
 
   const response = await ai.models.generateContent({
     model: TTS_MODEL,
@@ -345,16 +423,17 @@ export async function textToSpeechWav(plainScript, outPath, phase = null) {
     },
   });
 
-  const data = response.candidates?.[0]?.content?.parts?.[0]?.inlineData?.data;
+  const inline = pickGeminiAudioInline(response);
+  const data = inline?.data;
   if (!data) {
     throw new Error(
       `No audio from ${TTS_MODEL}: ${JSON.stringify(response, null, 2)}`,
     );
   }
 
-  await mkdir(dirname(outPath), { recursive: true });
+  const mime = inline.mimeType || inline.mime_type;
   const audioBuffer = Buffer.from(data, "base64");
-  await saveWaveFile(outPath, audioBuffer);
+  await writeGeminiTtsBytesToWavPath(outPath, audioBuffer, mime);
   return outPath;
 }
 

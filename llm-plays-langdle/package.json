@@ -5,6 +5,7 @@
   "scripts": {
     "tts:sample": "node scripts/gemini-tts-sample.mjs",
     "record:lang": "node scripts/build-lang-short.mjs",
+    "merge:lang": "node scripts/merge-lang-short.mjs",
     "postinstall": "npx playwright install chromium"
   },
   "dependencies": {
