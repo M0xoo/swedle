@@ -1,6 +1,15 @@
 import type { FeedbackTone } from "@/lib/types";
 import type { LangGuessResult } from "@/lib/games/language";
 
+/** Order of clue columns (matches UI left → right). */
+export const LANG_SHARE_CELL_KEYS = [
+  "paradigm",
+  "openSource",
+  "execution",
+  "platforms",
+  "year",
+] as const satisfies readonly (keyof LangGuessResult["cells"])[];
+
 const TILE: Record<FeedbackTone, string> = {
   green: "🟩",
   orange: "🟨",
@@ -15,13 +24,18 @@ export function langGuessToShareRow(r: LangGuessResult): string {
     if (yearHint === "up") year += "↑";
     else if (yearHint === "down") year += "↓";
   }
-  return (
-    TILE[cells.paradigm] +
-    TILE[cells.openSource] +
-    TILE[cells.execution] +
-    TILE[cells.platforms] +
-    year
-  );
+  return LANG_SHARE_CELL_KEYS.map((k) => TILE[cells[k]]).join("");
+}
+
+/** Grid + header only (URL is passed separately for X / intent APIs). */
+export function buildLangXShareText(
+  dateKey: string,
+  rowsChronological: LangGuessResult[],
+): string {
+  const n = rowsChronological.length;
+  const lines = rowsChronological.map(langGuessToShareRow);
+  const head = `SWEDLE · Langdle ${dateKey} ${n}/6`;
+  return `${head}\n\n${lines.join("\n")}`;
 }
 
 export function buildLangShareMessage(
@@ -29,14 +43,11 @@ export function buildLangShareMessage(
   rowsChronological: LangGuessResult[],
   origin?: string,
 ): string {
-  const n = rowsChronological.length;
-  const lines = rowsChronological.map(langGuessToShareRow);
+  const core = buildLangXShareText(dateKey, rowsChronological);
   const url =
     origin && origin.length > 0
       ? `${origin.replace(/\/$/, "")}/lang`
       : "";
-  const head = `SWEDLE · Langdle ${dateKey} ${n}/6`;
-  const body = lines.join("\n");
   const tail = url ? `\n\n${url}` : "";
-  return `${head}\n\n${body}${tail}`;
+  return `${core}${tail}`;
 }

@@ -1,15 +1,24 @@
 "use client";
 
-import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import {
+  useCallback,
+  useEffect,
+  useLayoutEffect,
+  useMemo,
+  useRef,
+  useState,
+} from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { submitLanguageGuess } from "@/app/actions";
 import { FeedbackCell } from "@/components/FeedbackCell";
 import { LangShareButton } from "@/components/LangShareButton";
+import { PersistHint } from "@/components/PersistHint";
 import type { LangGuessResult } from "@/lib/games/language";
 import {
   labelExecution,
   labelPlatforms,
 } from "@/lib/games/language";
+import { loadLangProgress, saveLangProgress } from "@/lib/game-persist";
 import type { Language } from "@/lib/types";
 
 const PARADIGM_LABEL: Record<string, string> = {
@@ -39,8 +48,20 @@ export function LangGame({
   const [open, setOpen] = useState(false);
   const wrapRef = useRef<HTMLDivElement>(null);
   const [rows, setRows] = useState<LangGuessResult[]>([]);
+  const [hydrated, setHydrated] = useState(false);
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
+
+  useLayoutEffect(() => {
+    const saved = loadLangProgress(dateKey);
+    if (saved && saved.length > 0) setRows(saved);
+    setHydrated(true);
+  }, [dateKey]);
+
+  useEffect(() => {
+    if (!hydrated) return;
+    saveLangProgress(dateKey, rows);
+  }, [dateKey, rows, hydrated]);
 
   const filtered = useMemo(() => {
     const q = query.trim().toLowerCase();
@@ -86,6 +107,14 @@ export function LangGame({
     },
     [busy, dateKey, exhausted, rows, solved],
   );
+
+  if (!hydrated) {
+    return (
+      <div className="flex flex-col gap-6">
+        <PersistHint />
+      </div>
+    );
+  }
 
   return (
     <div className="flex flex-col gap-6">

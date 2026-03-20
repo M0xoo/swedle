@@ -8,7 +8,9 @@ import { ipoPrompt } from "@/lib/games/ipos";
 import { bumpScore, readScore } from "@/lib/score";
 import type { IpoEntry } from "@/lib/types";
 import { GameEndScreen } from "@/components/GameEndScreen";
+import { PersistHint } from "@/components/PersistHint";
 import { ScorePulse } from "@/components/ScorePulse";
+import { usePersistedQuiz } from "@/hooks/usePersistedQuiz";
 
 type Round = { left: IpoEntry; right: IpoEntry; mode: IpoMode };
 
@@ -31,16 +33,19 @@ export function IpoGame({
   dateKey: string;
   rounds: Round[];
 }) {
-  const [i, setI] = useState(0);
+  const total = rounds.length;
+  const { i, setI, done, setDone, ready } = usePersistedQuiz(
+    dateKey,
+    "ipo",
+    total,
+  );
   const [score, setScore] = useState(() => readScore(dateKey, "ipo"));
   const [last, setLast] = useState<boolean | null>(null);
   const [pulse, setPulse] = useState(0);
-  const [done, setDone] = useState(false);
   const [busy, setBusy] = useState(false);
   const [highlight, setHighlight] = useState<"left" | "right" | null>(null);
 
   const r = rounds[i];
-  const total = rounds.length;
 
   async function pick(side: "left" | "right") {
     if (!r || busy || done) return;
@@ -66,6 +71,14 @@ export function IpoGame({
       else setI((x) => x + 1);
       setBusy(false);
     }, 720);
+  }
+
+  if (!ready) {
+    return (
+      <div className="flex flex-col gap-6">
+        <PersistHint />
+      </div>
+    );
   }
 
   return (

@@ -5,7 +5,9 @@ import { motion, AnimatePresence } from "framer-motion";
 import { submitComplexityAnswer } from "@/app/actions";
 import { bumpScore, readScore } from "@/lib/score";
 import { GameEndScreen } from "@/components/GameEndScreen";
+import { PersistHint } from "@/components/PersistHint";
 import { ScorePulse } from "@/components/ScorePulse";
+import { usePersistedQuiz } from "@/hooks/usePersistedQuiz";
 
 type Q = { prompt: string; choices: [string, string, string] };
 
@@ -16,15 +18,18 @@ export function ComplexityGame({
   dateKey: string;
   questions: Q[];
 }) {
-  const [i, setI] = useState(0);
+  const total = questions.length;
+  const { i, setI, done, setDone, ready } = usePersistedQuiz(
+    dateKey,
+    "complexity",
+    total,
+  );
   const [score, setScore] = useState(() => readScore(dateKey, "complexity"));
   const [last, setLast] = useState<boolean | null>(null);
   const [pulse, setPulse] = useState(0);
-  const [done, setDone] = useState(false);
   const [busy, setBusy] = useState(false);
 
   const q = questions[i];
-  const total = questions.length;
 
   async function pick(idx: 0 | 1 | 2) {
     if (!q || busy || done) return;
@@ -47,6 +52,14 @@ export function ComplexityGame({
       else setI((x) => x + 1);
       setBusy(false);
     }, 520);
+  }
+
+  if (!ready) {
+    return (
+      <div className="flex flex-col gap-6">
+        <PersistHint />
+      </div>
+    );
   }
 
   return (
