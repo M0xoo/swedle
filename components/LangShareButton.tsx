@@ -117,6 +117,16 @@ export function LangShareButton({
 
   return (
     <div className="space-y-4">
+      <div className="panel p-4">
+        <DailyCommunityStats
+          embedded
+          dateKey={dateKey}
+          game="lang"
+          kind="lang"
+          userScore={chronological.length}
+        />
+      </div>
+
       <div className="panel space-y-4 p-4">
         <div>
           <p className="font-mono-ui text-[10px] uppercase tracking-[0.16em] text-[var(--muted2)]">
@@ -172,13 +182,6 @@ export function LangShareButton({
       </div>
 
       <div className="panel p-4">
-        <DailyCommunityStats
-          embedded
-          dateKey={dateKey}
-          game="lang"
-          kind="lang"
-          userScore={chronological.length}
-        />
         <p className="font-mono-ui text-[10px] uppercase tracking-[0.16em] text-[var(--muted2)]">
           Your clues
         </p>

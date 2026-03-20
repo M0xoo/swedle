@@ -191,6 +191,26 @@ export function RevealGame({
         )}
       </div>
 
+      {exhausted && !solved ? (
+        <motion.div
+          initial={{ opacity: 0, y: 10 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.1, duration: 0.35 }}
+          className="flex flex-col items-center gap-6"
+        >
+          <DailyCommunityStats
+            dateKey={dateKey}
+            game="reveal"
+            kind="lang"
+            userScore={0}
+          />
+          <NextGameButton
+            href={nextGameAfterReveal.href}
+            gameTitle={nextGameAfterReveal.title}
+          />
+        </motion.div>
+      ) : null}
+
       {(solved || !exhausted) && (
       <div className="panel p-4">
         {solved && solvedRow ? (
@@ -219,15 +239,15 @@ export function RevealGame({
               transition={{ delay: 0.45, duration: 0.4 }}
               className="mt-6 flex flex-col items-center gap-6 border-t border-[var(--line)] pt-6"
             >
-              <NextGameButton
-                href={nextGameAfterReveal.href}
-                gameTitle={nextGameAfterReveal.title}
-              />
               <DailyCommunityStats
                 dateKey={dateKey}
                 game="reveal"
                 kind="lang"
                 userScore={rows.length}
+              />
+              <NextGameButton
+                href={nextGameAfterReveal.href}
+                gameTitle={nextGameAfterReveal.title}
               />
             </motion.div>
           </div>
@@ -312,26 +332,6 @@ export function RevealGame({
           ))}
         </AnimatePresence>
       </div>
-
-      {exhausted && !solved ? (
-        <motion.div
-          initial={{ opacity: 0, y: 10 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.15, duration: 0.35 }}
-          className="flex flex-col items-center gap-6"
-        >
-          <NextGameButton
-            href={nextGameAfterReveal.href}
-            gameTitle={nextGameAfterReveal.title}
-          />
-          <DailyCommunityStats
-            dateKey={dateKey}
-            game="reveal"
-            kind="lang"
-            userScore={0}
-          />
-        </motion.div>
-      ) : null}
     </div>
   );
 }

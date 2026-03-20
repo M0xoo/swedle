@@ -243,6 +243,26 @@ export function LangGame({
         )}
       </div>
 
+      {exhausted && !solved ? (
+        <motion.div
+          initial={{ opacity: 0, y: 10 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.1, duration: 0.35 }}
+          className="flex flex-col items-center gap-6"
+        >
+          <DailyCommunityStats
+            dateKey={dateKey}
+            game="lang"
+            kind="lang"
+            userScore={0}
+          />
+          <NextGameButton
+            href={nextGameAfterLang.href}
+            gameTitle={nextGameAfterLang.title}
+          />
+        </motion.div>
+      ) : null}
+
       <div className="space-y-3">
         <p className="text-xs font-medium uppercase tracking-[0.14em] text-[var(--muted)]">
           Clues
@@ -317,26 +337,6 @@ export function LangGame({
           ))}
         </AnimatePresence>
       </div>
-
-      {exhausted && !solved ? (
-        <motion.div
-          initial={{ opacity: 0, y: 10 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.15, duration: 0.35 }}
-          className="flex flex-col items-center gap-6"
-        >
-          <NextGameButton
-            href={nextGameAfterLang.href}
-            gameTitle={nextGameAfterLang.title}
-          />
-          <DailyCommunityStats
-            dateKey={dateKey}
-            game="lang"
-            kind="lang"
-            userScore={0}
-          />
-        </motion.div>
-      ) : null}
     </div>
   );
 }
