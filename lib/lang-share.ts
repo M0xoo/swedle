@@ -38,6 +38,17 @@ export function buildLangXShareText(
   return `${head}\n\n${lines.join("\n")}`;
 }
 
+/**
+ * `title` for X intent: same as {@link buildLangXShareText} plus trailing newlines
+ * so the compose UI puts the intent `url` (and hashtag) on a new line after the grid.
+ */
+export function buildLangXShareIntentTitle(
+  dateKey: string,
+  rowsChronological: LangGuessResult[],
+): string {
+  return `${buildLangXShareText(dateKey, rowsChronological)}\n\n`;
+}
+
 export function buildLangShareMessage(
   dateKey: string,
   rowsChronological: LangGuessResult[],

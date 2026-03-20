@@ -5,7 +5,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import { XShareButton } from "react-share";
 import {
   buildLangShareMessage,
-  buildLangXShareText,
+  buildLangXShareIntentTitle,
   LANG_SHARE_CELL_KEYS,
   langGuessToShareRow,
 } from "@/lib/lang-share";
@@ -75,8 +75,8 @@ export function LangShareButton({
     [rowsNewestFirst],
   );
 
-  const xTitle = useMemo(
-    () => buildLangXShareText(dateKey, chronological),
+  const xIntentTitle = useMemo(
+    () => buildLangXShareIntentTitle(dateKey, chronological),
     [chronological, dateKey],
   );
 
@@ -125,7 +125,7 @@ export function LangShareButton({
               <XShareButton
                 resetButtonStyle={false}
                 url={pageUrl}
-                title={xTitle}
+                title={xIntentTitle}
                 hashtags={["SWEDLE"]}
                 related={[]}
                 className={xBtnClass}
