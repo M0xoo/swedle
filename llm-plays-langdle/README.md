@@ -33,11 +33,11 @@ npm run record:lang
 | Order | Step | `--skip-audio` | `--skip-video` |
 |-------|------|----------------|----------------|
 | 1 | LLM play → `llm-trace.json` | runs | runs |
-| 2 | Narration + TTS → `narration-raw.wav` | **skipped** (reuse `narration-raw.wav` + `playback-steps.json`; must match this run’s beat count) | runs |
-| 3 | Playwright → `gameplay.webm` | runs | **skipped** |
-| 4 | Prepend + mux → `narration.wav`, `lang-short.mp4` | runs | **skipped** |
+| 2 | Narration + TTS → `narration-raw.wav` | **skipped** (no WAV) | runs |
+| 3 | Playwright → `gameplay.webm` | **fast replay** (guesses back-to-back, no narration-timed sleeps) | **skipped** |
+| 4 | Export | **video-only** `lang-short.mp4` (no audio track) | **skipped** |
 
-**Both** skips: only step **1** (trace written, then exit). To mux existing `gameplay.webm` + `narration.wav` only, use **`merge:lang`** below.
+**Both** skips: only step **1**. To mux existing `gameplay.webm` + `narration.wav` with sound, use **`merge:lang`** below.
 
 Env mirrors flags: `SKIP_AUDIO=1`, `SKIP_VIDEO=1`.
 
@@ -46,8 +46,6 @@ npm run record:lang -- --skip-audio
 npm run record:lang -- --skip-video
 npm run record:lang -- --skip-audio --skip-video
 ```
-
-A **full** run writes `playback-steps.json` and `record-meta.json`; reuse them when using `--skip-audio` (same puzzle / same number of narration beats as the cached audio).
 
 **Mux only** (reuse `gameplay.webm` + `narration.wav` after changing merge settings):
 
@@ -62,8 +60,8 @@ node scripts/merge-lang-short.mjs path/to/gameplay.webm path/to/narration.wav pa
 1. **`llm-lang-play.mjs`** — Same daily secret as production (`data/languages.json` + date seed). Gemini gets rules + full id/name directory; each turn it returns `{"guessId":"..."}`; we run **`evaluateLanguageGuess`** locally and send back green/orange/gray (+ year ↑/↓). Repeat until solve or 6 guesses.
 2. **`out/.../llm-trace.json`** — Turn-by-turn log + replay order (debug / B-roll).
 3. **`gemini-audio.mjs`** — Flash returns **segment JSON**: intro → each round **guess** + **react** (react omitted if that round solved the puzzle) → outro. Each line is **TTS’d to its own WAV**; **ffprobe** gives exact seconds per beat. Voice **`Charon`** by default (`GEMINI_TTS_VOICE`).
-4. **`record-lang-gameplay.mjs`** — **intro / react / outro** = hold UI for that clip’s duration. **guess** = hold for the **full** guess-audio duration (voice finishes “let’s try…”), **then** Playwright submits; **react** holds on the new clues; after a correct final guess the next beat is **outro** (board already shows the win).
-5. **`ffmpeg-merge.mjs`** — Concat segment WAVs → `narration-raw.wav`, prepend **silence** equal to browser load time so audio lines up with the recording start, then mux MP4.
+4. **`record-lang-gameplay.mjs`** — With narration: **intro / react / outro** waits match TTS clip lengths; **guess** waits for full guess audio then submits. With **`--skip-audio`**: **fast replay** — submit each guess in sequence with no narration pacing.
+5. **`ffmpeg-merge.mjs`** — Full run: concat WAVs, prepend load silence, mux H.264 + AAC. **`--skip-audio`**: WebM → H.264 **MP4 with no audio**.
 
 ### Environment (optional)
 

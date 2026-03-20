@@ -3,30 +3,27 @@
  * Pipeline (in order):
  *   1) Play game — LLM in Node, write llm-trace.json
  *   2) Record audios — narration JSON + TTS + segment WAVs + narration-raw.wav
- *   3) Playwright — timed replay → gameplay.webm
- *   4) Final video — prepend load silence + mux → narration.wav + lang-short.mp4
+ *   3) Playwright — timed replay → gameplay.webm (or fast replay when --skip-audio)
+ *   4) Final video — prepend + mux with narration → lang-short.mp4 (or video-only MP4 when --skip-audio)
  *
- * --skip-audio  → skip step 2 only (reuse narration-raw.wav + playback-steps.json; must match this run’s beat count)
- * --skip-video  → skip steps 3–4 (no WebM, no MP4, no prepend)
+ * --skip-audio  → skip step 2–4 audio: fast Playwright (no TTS-timed sleeps), gameplay.webm → MP4 (no sound)
+ * --skip-video  → skip steps 3–4 after step 2
  * both          → step 1 only
  *
  * Flags: --skip-audio | --no-audio  --skip-video | --no-video  -h | --help
  * Env: SKIP_AUDIO=1  SKIP_VIDEO=1
  */
-import { access, mkdir, readFile, writeFile } from "node:fs/promises";
+import { mkdir, writeFile } from "node:fs/promises";
 import { dirname, join, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
 import dotenv from "dotenv";
-import {
-  buildExpectedNarrationSpec,
-  generateNarrationSegments,
-  textToSpeechWav,
-} from "./gemini-audio.mjs";
+import { generateNarrationSegments, textToSpeechWav } from "./gemini-audio.mjs";
 import {
   concatWavFiles,
   ffprobeDurationSeconds,
   mergeVideoAndWav,
   prependSilenceToWav,
+  webmToMp4VideoOnly,
 } from "./ffmpeg-merge.mjs";
 import { runLlmLangPlay } from "./llm-lang-play.mjs";
 import { recordLangGameplay } from "./record-lang-gameplay.mjs";
@@ -58,60 +55,19 @@ function parseFlags(argv) {
   return { help: false, skipAudio, skipVideo };
 }
 
-async function fileExists(p) {
-  try {
-    await access(p);
-    return true;
-  } catch {
-    return false;
-  }
-}
-
-async function readJson(p) {
-  return JSON.parse(await readFile(p, "utf8"));
-}
-
-function requirePath(ok, path, hint) {
-  if (!ok) throw new Error(`Missing ${hint}: ${path}`);
-}
-
-/**
- * Load timing from a prior full run; phases must match this game’s expected beats
- * (same number of guesses / win row as buildExpectedNarrationSpec(play)).
- */
-async function loadCachedPlaybackSteps(outDir, play) {
-  const spec = buildExpectedNarrationSpec(play);
-  const stepsPath = join(outDir, "playback-steps.json");
-  requirePath(await fileExists(stepsPath), stepsPath, "playback-steps.json");
-  const steps = await readJson(stepsPath);
-  if (!Array.isArray(steps) || steps.length !== spec.length) {
-    throw new Error(
-      `--skip-audio: need playback-steps.json with ${spec.length} steps for this game (got ${steps?.length ?? 0}). Run once without --skip-audio after the same puzzle outcome, or regenerate audio.`,
-    );
-  }
-  for (let i = 0; i < spec.length; i++) {
-    if (steps[i].phase !== spec[i].phase) {
-      throw new Error(
-        `--skip-audio: playback-steps.json[${i}].phase is "${steps[i].phase}", expected "${spec[i].phase}"`,
-      );
-    }
-  }
-  return steps;
-}
-
 function printHelp() {
   console.log(`Usage: node scripts/build-lang-short.mjs [options]
 
 Pipeline:
   1) Play game (LLM) → llm-trace.json
-  2) Record audios → narration JSON, TTS, segment WAVs, narration-raw.wav
-  3) Playwright → gameplay.webm
-  4) Prepend + mux → narration.wav, lang-short.mp4
+  2) Record audios → narration + TTS + narration-raw.wav
+  3) Playwright → gameplay.webm (timed to TTS, or fast back-to-back guesses if --skip-audio)
+  4) narration.wav + mux → lang-short.mp4 (or video-only MP4 if --skip-audio)
 
 Options:
-  --skip-audio, --no-audio   Skip step 2 only. Reuses narration-raw.wav + playback-steps.json;
-                             beat count and phases must match this run (same puzzle shape).
-  --skip-video, --no-video   Skip steps 3–4 (no Playwright, no WebM, no prepend, no MP4).
+  --skip-audio, --no-audio   Skip narration/TTS/WAV entirely. Playwright replays guesses immediately
+                             (no intro/react/outro waits). Output: gameplay.webm + silent lang-short.mp4.
+  --skip-video, --no-video   After step 2 (or 1 if also skip-audio), stop — no WebM/MP4.
   -h, --help
 
 Both skips: only step 1 (game + trace).
@@ -145,8 +101,8 @@ async function main() {
 
   console.log("Date (UTC):", dateKey);
   console.log("BASE_URL:", baseUrl);
-  if (skipAudio) console.log("— skip-audio: skipping step 2 (TTS / narration-raw build)");
-  if (skipVideo) console.log("— skip-video: skipping steps 3–4 (Playwright + mux)");
+  if (skipAudio) console.log("— skip-audio: no TTS; fast Playwright; video-only MP4");
+  if (skipVideo) console.log("— skip-video: no WebM / MP4");
 
   console.log("\n1) Play game (LLM in Node)…");
   const play = await runLlmLangPlay(dateKey);
@@ -190,7 +146,9 @@ async function main() {
 
   let playbackSteps;
 
-  if (!skipAudio) {
+  if (skipAudio) {
+    console.log("\n2) Record audios — skipped (no WAV / narration)");
+  } else {
     console.log("\n2) Record audios (narration + TTS + concat)…");
     const segments = await generateNarrationSegments(playForNarr);
     await writeFile(
@@ -250,15 +208,11 @@ async function main() {
     await concatWavFiles(wavAbsPaths, narrRaw);
     const rawTotal = await ffprobeDurationSeconds(narrRaw);
     console.log("   narration-raw.wav total:", rawTotal.toFixed(2), "s");
-  } else {
-    console.log("\n2) Record audios — skipped (reusing cached files)");
-    requirePath(await fileExists(narrRaw), narrRaw, "narration-raw.wav");
-    playbackSteps = await loadCachedPlaybackSteps(outDir, play);
   }
 
   if (skipVideo) {
     console.log(
-      "\n3–4) Playwright + final video — skipped.\nDone (--skip-video).",
+      "\n3–4) Playwright + export — skipped.\nDone (--skip-video).",
     );
     return;
   }
@@ -268,17 +222,30 @@ async function main() {
     baseUrl,
     guesses: play.guesses,
     outVideo: rawWebm,
-    playbackSteps,
+    ...(skipAudio
+      ? { fastReplay: true }
+      : { playbackSteps }),
   });
   const setupMs = rec.setupMs;
   await writeFile(
     recordMetaPath,
-    JSON.stringify({ setupMs }, null, 2),
+    JSON.stringify(
+      { setupMs, fastReplay: Boolean(skipAudio) },
+      null,
+      2,
+    ),
     "utf8",
   );
-  console.log("   setupMs (prepended silence):", setupMs);
+  console.log("   setupMs:", setupMs, skipAudio ? "(fast replay)" : "");
 
-  console.log("\n4) Prepend silence + mux MP4…");
+  if (skipAudio) {
+    console.log("\n4) Encode MP4 (video only, no audio)…");
+    await webmToMp4VideoOnly(rawWebm, finalMp4);
+    console.log("Done:", finalMp4);
+    return;
+  }
+
+  console.log("\n4) Prepend silence + mux with narration…");
   await prependSilenceToWav(setupMs / 1000, narrRaw, narrWav);
   const narrTotal = await ffprobeDurationSeconds(narrWav);
   console.log("   narration.wav:", narrTotal.toFixed(2), "s");

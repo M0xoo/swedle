@@ -116,6 +116,27 @@ export async function prependSilenceToWav(leadSec, inputWav, outWav) {
   ]);
 }
 
+/** WebM screen capture → H.264 MP4, no audio (for --skip-audio runs). */
+export async function webmToMp4VideoOnly(videoWebm, outMp4) {
+  await run(FFMPEG_BIN, [
+    "-y",
+    "-i",
+    videoWebm,
+    "-c:v",
+    "libx264",
+    "-preset",
+    "fast",
+    "-crf",
+    "23",
+    "-pix_fmt",
+    "yuv420p",
+    "-an",
+    "-movflags",
+    "+faststart",
+    outMp4,
+  ]);
+}
+
 export async function mergeVideoAndWav(videoWebm, audioWav, outMp4) {
   const vDur = await ffprobeDurationSeconds(videoWebm);
   const aDur = await ffprobeDurationSeconds(audioWav);

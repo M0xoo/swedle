@@ -46,16 +46,24 @@ async function expectEnabled(page, locator, timeoutMs) {
  * @param {string} opts.baseUrl
  * @param {{ id: string, name: string }[]} opts.guesses
  * @param {string} opts.outVideo
- * @param {Array<{ phase: string, durationMs: number, guessIndex?: number }>} opts.playbackSteps
- *        phase: intro | guess | react | outro — durations must match ffprobe of each TTS clip.
- *        guessIndex: 0-based index into guesses for phase "guess".
- * @returns {Promise<{ setupMs: number }>} setupMs = time from navigation start until first playback step (for leading silence on master WAV)
+ * @param {Array<{ phase: string, durationMs: number, guessIndex?: number }>} [opts.playbackSteps]
+ *        Required unless opts.fastReplay — intro/guess/react/outro sleeps synced to TTS.
+ * @param {boolean} [opts.fastReplay] If true, skip narration timing: submit guesses back-to-back (no WAV pipeline).
+ * @returns {Promise<{ setupMs: number }>} setupMs = ms from navigation start until replay logic starts
  */
 export async function recordLangGameplay(opts) {
-  const { baseUrl, guesses, outVideo, playbackSteps } = opts;
+  const { baseUrl, guesses, outVideo, playbackSteps, fastReplay } = opts;
 
-  if (!Array.isArray(playbackSteps) || playbackSteps.length === 0) {
-    throw new Error("recordLangGameplay: playbackSteps is required (synced segment durations).");
+  if (!fastReplay) {
+    if (!Array.isArray(playbackSteps) || playbackSteps.length === 0) {
+      throw new Error(
+        "recordLangGameplay: playbackSteps is required unless fastReplay is true.",
+      );
+    }
+  } else {
+    if (!Array.isArray(guesses) || guesses.length === 0) {
+      throw new Error("recordLangGameplay: guesses required for fastReplay.");
+    }
   }
 
   await mkdir(join(outVideo, ".."), { recursive: true });
@@ -109,42 +117,58 @@ export async function recordLangGameplay(opts) {
   await expectEnabled(page, search, 120_000);
 
   const setupMs = Date.now() - recordT0;
-  console.log(
-    `[record] Page ready; ${playbackSteps.length} timed steps (setup ${setupMs} ms → padded as leading silence on audio). Guess: full guess-audio duration, then submit.`,
-  );
 
-  for (let s = 0; s < playbackSteps.length; s++) {
-    const step = playbackSteps[s];
-    const ms = Math.max(0, Math.round(step.durationMs));
-    const phase = step.phase;
-
-    if (phase === "intro") {
-      await sleep(ms);
-      continue;
-    }
-
-    if (phase === "guess") {
-      const idx = step.guessIndex;
-      if (idx == null || idx < 0 || idx >= guesses.length) {
-        throw new Error(`playbackSteps[${s}]: invalid guessIndex ${idx}`);
-      }
-      const lang = guesses[idx];
-      const input = page
-        .getByTestId("lang-search-input")
-        .or(page.locator('input[placeholder*="Search"]'));
-      await sleep(ms);
+  if (fastReplay) {
+    console.log(
+      `[record] Fast replay (no narration waits): ${guesses.length} guesses (setup ${setupMs} ms).`,
+    );
+    const input = page
+      .getByTestId("lang-search-input")
+      .or(page.locator('input[placeholder*="Search"]'));
+    for (let i = 0; i < guesses.length; i++) {
+      const lang = guesses[i];
       await input.click();
       await input.fill(lang.name);
       await page.getByRole("button", { name: lang.name, exact: true }).click();
-      continue;
     }
+  } else {
+    console.log(
+      `[record] Page ready; ${playbackSteps.length} timed steps (setup ${setupMs} ms → leading silence on audio). Guess: full guess-audio duration, then submit.`,
+    );
 
-    if (phase === "react" || phase === "outro") {
-      await sleep(ms);
-      continue;
+    for (let s = 0; s < playbackSteps.length; s++) {
+      const step = playbackSteps[s];
+      const ms = Math.max(0, Math.round(step.durationMs));
+      const phase = step.phase;
+
+      if (phase === "intro") {
+        await sleep(ms);
+        continue;
+      }
+
+      if (phase === "guess") {
+        const idx = step.guessIndex;
+        if (idx == null || idx < 0 || idx >= guesses.length) {
+          throw new Error(`playbackSteps[${s}]: invalid guessIndex ${idx}`);
+        }
+        const lang = guesses[idx];
+        const input = page
+          .getByTestId("lang-search-input")
+          .or(page.locator('input[placeholder*="Search"]'));
+        await sleep(ms);
+        await input.click();
+        await input.fill(lang.name);
+        await page.getByRole("button", { name: lang.name, exact: true }).click();
+        continue;
+      }
+
+      if (phase === "react" || phase === "outro") {
+        await sleep(ms);
+        continue;
+      }
+
+      throw new Error(`Unknown playback phase: ${phase}`);
     }
-
-    throw new Error(`Unknown playback phase: ${phase}`);
   }
 
   const video = page.video();
