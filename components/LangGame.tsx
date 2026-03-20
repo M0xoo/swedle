@@ -201,6 +201,7 @@ export function LangGame({
             </p>
             <div className="relative mt-3" ref={wrapRef}>
               <input
+                data-testid="lang-search-input"
                 value={query}
                 disabled={solved || exhausted}
                 onChange={(e) => {
