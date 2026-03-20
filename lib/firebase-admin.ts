@@ -27,18 +27,41 @@ function gcpProjectIdFromEnv(): string | undefined {
   return id || undefined;
 }
 
-/** True on Cloud Run services (metadata server + runtime SA ADC). */
-function isCloudRun(): boolean {
-  return Boolean(process.env.K_SERVICE);
+/**
+ * True when the process likely runs on GCP with a metadata server / runtime SA
+ * (Cloud Run service, Cloud Run job, etc.).
+ */
+function isLikelyGcpAdcRuntime(): boolean {
+  return Boolean(
+    process.env.K_SERVICE ||
+      process.env.K_REVISION ||
+      process.env.CLOUD_RUN_JOB,
+  );
 }
 
 export function isFirebaseStatsEnabled(): boolean {
   if (parseServiceAccount()) return true;
   if (process.env.GOOGLE_APPLICATION_CREDENTIALS) return true;
   if (process.env.FIREBASE_USE_ADC === "1") return true;
-  // Cloud Run: ADC is always available; same GCP project as Firebase when linked.
-  if (isCloudRun() && gcpProjectIdFromEnv()) return true;
+  // Explicit: ADC + project id on any host (e.g. custom Docker on GCP).
+  if (process.env.FIREBASE_STATS_ENABLED === "1" && gcpProjectIdFromEnv()) {
+    return true;
+  }
+  if (isLikelyGcpAdcRuntime() && gcpProjectIdFromEnv()) return true;
   return false;
+}
+
+/** Why stats are off (for logs + a safe client hint). */
+export type FirebaseStatsGate =
+  | { ok: true }
+  | { ok: false; reason: "missing_project" | "disabled" };
+
+export function getFirebaseStatsGate(): FirebaseStatsGate {
+  if (isFirebaseStatsEnabled()) return { ok: true };
+  if (isLikelyGcpAdcRuntime() && !gcpProjectIdFromEnv()) {
+    return { ok: false, reason: "missing_project" };
+  }
+  return { ok: false, reason: "disabled" };
 }
 
 function ensureApp() {
@@ -56,7 +79,6 @@ function ensureApp() {
     });
     return;
   }
-  // Cloud Run / GCE / local: ADC via metadata server or GOOGLE_APPLICATION_CREDENTIALS
   const gac = process.env.GOOGLE_APPLICATION_CREDENTIALS;
   const projectId = gcpProjectIdFromEnv();
   if (projectId) {
@@ -64,11 +86,13 @@ function ensureApp() {
   } else {
     initializeApp();
   }
-  const adcLabel = isCloudRun()
-    ? "ADC (Cloud Run service account)"
+  const adcLabel = isLikelyGcpAdcRuntime()
+    ? "ADC (GCP runtime service account)"
     : process.env.FIREBASE_USE_ADC === "1"
       ? "ADC (FIREBASE_USE_ADC=1)"
-      : "ADC / default";
+      : process.env.FIREBASE_STATS_ENABLED === "1"
+        ? "ADC (FIREBASE_STATS_ENABLED=1)"
+        : "ADC / default";
   statsLog("Firebase Admin initialized", {
     credential: gac
       ? `GOOGLE_APPLICATION_CREDENTIALS (${path.basename(gac)})`

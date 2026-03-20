@@ -62,8 +62,36 @@ Any Node host that supports Next works (e.g. [Vercel](https://vercel.com/docs/fr
 
 **Optional env:** `NEXT_PUBLIC_SITE_URL` — overrides the default production origin (`https://swedle.mokh.xyz`) for canonical URLs, `sitemap.xml`, and Open Graph/Twitter `metadataBase`. On **Vercel preview** deployments, the preview hostname is used automatically so links stay on the preview.
 
-**Firebase (community stats):** Create a Firebase project → enable **Firestore** (Native) → create a **service account** and download JSON. Set `FIREBASE_SERVICE_ACCOUNT_KEY` to the **full JSON on one line** (keep `private_key` newlines as `\n` inside the string), or use `GOOGLE_APPLICATION_CREDENTIALS` / `FIREBASE_USE_ADC=1` on GCP; see `.env.example`. Firestore collection: `dailyStats` with doc IDs `{UTC-date}_{game}` (`stars`, `ipo`, `timeline`, `complexity`, `lang`). You can lock client access in Firestore rules since only Admin SDK writes.
+**Firebase (community stats)** uses Firestore collection `dailyStats`, doc IDs `{UTC-date}_{game}`. The **server** uses `firebase-admin` only (no client SDK).
 
-**Cloud Run:** The service sets `K_SERVICE` and **`GOOGLE_CLOUD_PROJECT`** automatically. The app treats that as “use Application Default Credentials” for Firebase Admin—**no JSON in env required** if the **Cloud Run runtime service account** can access Firestore. In IAM, grant that identity **`Cloud Datastore User`** (`roles/datastore.user`) on the same GCP project as Firebase (or an equivalent role that allows Firestore read/write). If your Firebase project id differs from the GCP project id, set **`FIREBASE_PROJECT_ID`**. Optional: mount a key file and set `GOOGLE_APPLICATION_CREDENTIALS` instead.
+### Activate on Cloud Run (recommended: no JSON in env)
+
+1. **One Google Cloud project**  
+   In [Firebase Console](https://console.firebase.google.com/), your app should use the **same** GCP project you deploy Cloud Run to (Firebase → Project settings → “Google Cloud” should show that project).
+
+2. **Turn on Firestore**  
+   Firebase Console → **Build → Firestore Database** → create database (Native mode, any region). Rules can deny all client access; the Admin SDK bypasses rules.
+
+3. **Let Cloud Run talk to Firestore**  
+   Cloud Run uses a **service account** (Revision details → **Security** → “Service account”, often `PROJECT_NUMBER-compute@developer.gserviceaccount.com` unless you changed it).  
+   In [GCP IAM](https://console.cloud.google.com/iam-admin/iam), grant that account **`Cloud Datastore User`** (`roles/datastore.user`) on **this project** (read/write Firestore).
+
+4. **Deploy**  
+   Cloud Run usually injects **`GOOGLE_CLOUD_PROJECT`** and **`K_SERVICE`**. This app turns stats on when it sees a **GCP runtime** (`K_SERVICE`, **`K_REVISION`**, or **`CLOUD_RUN_JOB`**) **and** a project id from **`GOOGLE_CLOUD_PROJECT`**, **`GCLOUD_PROJECT`**, or **`FIREBASE_PROJECT_ID`**.  
+   If the end screen shows **Community stats** with a hint about a missing project, **add `GOOGLE_CLOUD_PROJECT` yourself** under Cloud Run → your service → **Edit & deploy new revision** → **Variables** (value = your GCP project id, e.g. `my-prod-123`). Some Next.js / Docker setups don’t see the platform default.  
+   If it still doesn’t enable, set **`FIREBASE_STATS_ENABLED=1`** and **`GOOGLE_CLOUD_PROJECT`** (or **`FIREBASE_PROJECT_ID`**) together to force ADC.  
+   If your **Firebase project id** ≠ GCP project id, set **`FIREBASE_PROJECT_ID`** to the Firebase id.
+
+5. **Check**  
+   Finish a game: the **Community stats** block should show solvers or a short **troubleshooting message** (not a blank gap). In Firestore, collection **`dailyStats`** should get docs like `2025-03-20_stars`.  
+   Optional: set **`SWEDLE_STATS_LOG=1`** on Cloud Run and grep logs for **`[swedle:stats]`** (includes one-time `console.warn` if env isn’t right).
+
+### Other hosts (or if you prefer a key file)
+
+- **`FIREBASE_SERVICE_ACCOUNT_KEY`**: minified JSON of a Firebase **service account** key (local `.env.local` or Secret Manager → env var).  
+- **`GOOGLE_APPLICATION_CREDENTIALS`**: path inside the container to that JSON file (e.g. secret mounted as a file).  
+- Non–Cloud Run GCP: you can set **`FIREBASE_USE_ADC=1`** plus project id so ADC is used explicitly.  
+
+See `.env.example`.
 
 **Debugging:** With `npm run dev`, server logs prefixed `[swedle:stats]` show init, each `getDailyStats` read, and `recordDailyCompletion` / Firestore writes. For production builds, set `SWEDLE_STATS_LOG=1` to enable the same logs.

@@ -11,6 +11,18 @@ function storageKey(dateKey: string, game: StatsGame) {
   return `${STORAGE_PREFIX}${dateKey}:${game}`;
 }
 
+const STATS_OFF_COPY: Record<
+  "missing_project" | "disabled" | "firestore_error",
+  string
+> = {
+  missing_project:
+    "Community stats need a project id on the server. In Cloud Run (or your host), set environment variable GOOGLE_CLOUD_PROJECT or FIREBASE_PROJECT_ID to your Google Cloud project id, then redeploy.",
+  disabled:
+    "Community stats are off on the server. Set FIREBASE_STATS_ENABLED=1 together with GOOGLE_CLOUD_PROJECT, or configure FIREBASE_SERVICE_ACCOUNT_KEY / GOOGLE_APPLICATION_CREDENTIALS. See the README Deploy section.",
+  firestore_error:
+    "Community stats couldn’t reach Firestore. Check the service account has Cloud Datastore User (or equivalent) on this project, that Firestore is enabled, and server logs for [swedle:stats].",
+};
+
 function DistributionLine({
   buckets,
   userBucket,
@@ -102,11 +114,15 @@ export function DailyCommunityStats({
   const [solvers, setSolvers] = useState<number | null>(null);
   const [buckets, setBuckets] = useState<number[] | null>(null);
   const [visible, setVisible] = useState(false);
+  const [offReason, setOffReason] = useState<
+    "missing_project" | "disabled" | "firestore_error" | null
+  >(null);
 
   useEffect(() => {
     let cancelled = false;
 
     async function run() {
+      setOffReason(null);
       const key = storageKey(dateKey, game);
       const already =
         typeof window !== "undefined" && localStorage.getItem(key) === "1";
@@ -115,6 +131,9 @@ export function DailyCommunityStats({
       if (cancelled) return;
       if (!first.enabled) {
         setVisible(false);
+        setSolvers(null);
+        setBuckets(null);
+        setOffReason(first.reason);
         return;
       }
       setVisible(true);
@@ -131,9 +150,16 @@ export function DailyCommunityStats({
       // Always re-read so we show Firestore truth (fixes stale zeros when
       // localStorage was set earlier or another tab/session wrote first).
       const fresh = await getDailyStats(dateKey, game);
-      if (!cancelled && fresh.enabled) {
+      if (cancelled) return;
+      if (fresh.enabled) {
         setSolvers(fresh.solvers);
         setBuckets(fresh.buckets);
+        setOffReason(null);
+      } else {
+        setVisible(false);
+        setSolvers(null);
+        setBuckets(null);
+        setOffReason(fresh.reason);
       }
     }
 
@@ -142,6 +168,19 @@ export function DailyCommunityStats({
       cancelled = true;
     };
   }, [dateKey, game, userScore]);
+
+  if (offReason) {
+    return (
+      <div className="mt-6 w-full max-w-sm border-t border-[var(--line)] pt-5 text-left">
+        <p className="font-mono-ui text-[10px] uppercase tracking-[0.18em] text-[var(--muted)]">
+          Community stats
+        </p>
+        <p className="mt-2 text-sm leading-relaxed text-[var(--muted)]">
+          {STATS_OFF_COPY[offReason]}
+        </p>
+      </div>
+    );
+  }
 
   if (!visible || solvers === null || !buckets) return null;
 
