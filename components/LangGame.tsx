@@ -9,7 +9,7 @@ import {
   useState,
 } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { submitLanguageGuess } from "@/app/actions";
+import { getLangAnswer, submitLanguageGuess } from "@/app/actions";
 import { FeedbackCell } from "@/components/FeedbackCell";
 import { DailyCommunityStats } from "@/components/DailyCommunityStats";
 import { LangShareButton } from "@/components/LangShareButton";
@@ -55,8 +55,12 @@ export function LangGame({
   const [hydrated, setHydrated] = useState(false);
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [answer, setAnswer] = useState<{ id: string; name: string } | null>(
+    null,
+  );
 
   useLayoutEffect(() => {
+    setAnswer(null);
     const saved = loadLangProgress(dateKey);
     if (saved && saved.length > 0) setRows(saved);
     setHydrated(true);
@@ -82,6 +86,17 @@ export function LangGame({
     () => rows.find((r) => r.solved) ?? null,
     [rows],
   );
+
+  useEffect(() => {
+    if (!exhausted || solved || answer) return;
+    let cancelled = false;
+    void getLangAnswer(dateKey).then((a) => {
+      if (!cancelled) setAnswer(a);
+    });
+    return () => {
+      cancelled = true;
+    };
+  }, [answer, dateKey, exhausted, solved]);
 
   useEffect(() => {
     function onDoc(e: MouseEvent) {
@@ -127,7 +142,28 @@ export function LangGame({
   return (
     <div className="flex flex-col gap-6">
       <div className="panel p-4">
-        {solved && solvedRow ? (
+        {exhausted && !solved ? (
+          <motion.div
+            initial={{ opacity: 0, y: 12 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.4, ease: [0.22, 1, 0.36, 1] }}
+            className="relative overflow-hidden rounded-lg border border-[color-mix(in_srgb,var(--bad)_35%,var(--line))] bg-[color-mix(in_srgb,var(--bad)_8%,var(--bg))] px-5 py-7 ring-1 ring-[color-mix(in_srgb,var(--bad)_18%,transparent)] sm:px-7 sm:py-8"
+          >
+            <p className="font-mono-ui text-[10px] uppercase tracking-[0.18em] text-[var(--bad)]">
+              Out of guesses
+            </p>
+            <p className="font-mono-ui mt-2 text-[11px] text-[var(--muted)]">
+              Today&apos;s language was
+            </p>
+            <h2 className="font-display mt-2 text-[1.85rem] font-medium leading-tight tracking-tight text-[var(--fg)] sm:text-[2.25rem]">
+              {answer?.name ?? "…"}
+            </h2>
+            <p className="mt-4 text-sm leading-relaxed text-[var(--muted)]">
+              All six tries are spent — compare your guesses in the clue grid
+              below. A fresh language lands at UTC midnight.
+            </p>
+          </motion.div>
+        ) : solved && solvedRow ? (
           <div>
             <LangSolveCelebration
               label={
@@ -201,9 +237,7 @@ export function LangGame({
               <p className="mt-2 text-sm text-[var(--bad)]">{error}</p>
             ) : null}
             <p className="mt-3 text-xs text-[var(--muted2)]">
-              {exhausted
-                ? "Out of guesses."
-                : `${6 - rows.length} guesses left`}
+              {`${6 - rows.length} guesses left`}
             </p>
           </>
         )}
@@ -285,7 +319,12 @@ export function LangGame({
       </div>
 
       {exhausted && !solved ? (
-        <div className="flex flex-col items-center gap-6">
+        <motion.div
+          initial={{ opacity: 0, y: 10 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.15, duration: 0.35 }}
+          className="flex flex-col items-center gap-6"
+        >
           <NextGameButton
             href={nextGameAfterLang.href}
             gameTitle={nextGameAfterLang.title}
@@ -296,7 +335,7 @@ export function LangGame({
             kind="lang"
             userScore={0}
           />
-        </div>
+        </motion.div>
       ) : null}
     </div>
   );

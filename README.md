@@ -2,6 +2,10 @@
 
 Daily mini-games for software engineers. A new puzzle set every **UTC calendar day**—no accounts; progress and scores live in the browser (`localStorage`).
 
+**Play online:** [swedle.mokh.xyz](https://swedle.mokh.xyz/)
+
+![SWEDLE hub — daily games for software engineers](public/screenshot.png)
+
 ## Games
 
 | Game | What you do |
@@ -32,7 +36,7 @@ npm install
 npm run dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000). The live site is [swedle.mokh.xyz](https://swedle.mokh.xyz).
+Open [http://localhost:3000](http://localhost:3000). Production: [https://swedle.mokh.xyz/](https://swedle.mokh.xyz/).
 
 ```bash
 npm run build   # production build

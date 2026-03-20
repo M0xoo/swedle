@@ -48,6 +48,7 @@ export function RevealGame({
   );
 
   useLayoutEffect(() => {
+    setAnswer(null);
     const saved = loadRevealProgress(dateKey);
     if (saved && saved.length > 0) setRows(saved);
     setHydrated(true);
@@ -137,31 +138,60 @@ export function RevealGame({
   return (
     <div className="flex flex-col gap-6">
       <div className="panel overflow-hidden p-4">
-        <p className="font-mono-ui text-[10px] uppercase tracking-[0.14em] text-[var(--muted)]">
-          Today&apos;s snippet
-        </p>
-        <motion.pre
-          layout
-          className="mt-3 max-h-[min(24rem,55vh)] overflow-auto rounded-md border border-[var(--line)] bg-[color-mix(in_srgb,var(--fg)_3.5%,var(--bg))] p-4 text-left text-[11px] leading-relaxed text-[var(--fg)] sm:text-xs"
-        >
-          <code className="font-mono-ui whitespace-pre">{shown}</code>
-          {truncated ? (
-            <span
-              className="font-mono-ui text-[var(--muted2)]"
-              aria-hidden
-            >{` \u00b7\u00b7\u00b7`}</span>
-          ) : null}
-        </motion.pre>
-        {!solved && !exhausted ? (
-          <p className="mt-3 text-xs text-[var(--muted2)]">
-            Each wrong guess reveals more of the source.{" "}
-            <span className="text-[var(--muted)]">
-              {REVEAL_MAX_GUESSES - rows.length} guesses left.
-            </span>
-          </p>
-        ) : null}
+        {exhausted && !solved ? (
+          <motion.div
+            initial={{ opacity: 0, y: 12 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.4, ease: [0.22, 1, 0.36, 1] }}
+            className="relative overflow-hidden rounded-lg border border-[color-mix(in_srgb,var(--bad)_35%,var(--line))] bg-[color-mix(in_srgb,var(--bad)_8%,var(--bg))] px-4 py-5 ring-1 ring-[color-mix(in_srgb,var(--bad)_18%,transparent)] sm:px-5 sm:py-6"
+          >
+            <p className="font-mono-ui text-[10px] uppercase tracking-[0.18em] text-[var(--bad)]">
+              Out of guesses
+            </p>
+            <p className="font-mono-ui mt-2 text-[11px] text-[var(--muted)]">
+              The language was
+            </p>
+            <h2 className="font-display mt-1 text-[1.75rem] font-medium leading-tight tracking-tight text-[var(--fg)] sm:text-[2.1rem]">
+              {answer?.name ?? "…"}
+            </h2>
+            <p className="mt-3 text-sm leading-relaxed text-[var(--muted)]">
+              Here&apos;s the complete snippet. A new one replaces it at UTC
+              midnight.
+            </p>
+            <pre className="mt-4 max-h-[min(22rem,50vh)] overflow-auto rounded-md border border-[var(--line)] bg-[color-mix(in_srgb,var(--fg)_3.5%,var(--bg))] p-4 text-left text-[11px] leading-relaxed text-[var(--fg)] sm:text-xs">
+              <code className="font-mono-ui whitespace-pre">{code}</code>
+            </pre>
+          </motion.div>
+        ) : (
+          <>
+            <p className="font-mono-ui text-[10px] uppercase tracking-[0.14em] text-[var(--muted)]">
+              Today&apos;s snippet
+            </p>
+            <motion.pre
+              layout
+              className="mt-3 max-h-[min(24rem,55vh)] overflow-auto rounded-md border border-[var(--line)] bg-[color-mix(in_srgb,var(--fg)_3.5%,var(--bg))] p-4 text-left text-[11px] leading-relaxed text-[var(--fg)] sm:text-xs"
+            >
+              <code className="font-mono-ui whitespace-pre">{shown}</code>
+              {truncated ? (
+                <span
+                  className="font-mono-ui text-[var(--muted2)]"
+                  aria-hidden
+                >{` \u00b7\u00b7\u00b7`}</span>
+              ) : null}
+            </motion.pre>
+            {!solved && !exhausted ? (
+              <p className="mt-3 text-xs text-[var(--muted2)]">
+                Each wrong guess reveals more of the source.{" "}
+                <span className="text-[var(--muted)]">
+                  {REVEAL_MAX_GUESSES - rows.length} guesses left.
+                </span>
+              </p>
+            ) : null}
+          </>
+        )}
       </div>
 
+      {(solved || !exhausted) && (
       <div className="panel p-4">
         {solved && solvedRow ? (
           <div>
@@ -246,6 +276,7 @@ export function RevealGame({
           </>
         )}
       </div>
+      )}
 
       <div className="space-y-3">
         <p className="text-xs font-medium uppercase tracking-[0.14em] text-[var(--muted)]">
@@ -283,18 +314,12 @@ export function RevealGame({
       </div>
 
       {exhausted && !solved ? (
-        <div className="flex flex-col items-center gap-6">
-          <div className="panel w-full max-w-lg p-5 text-center">
-            <p className="font-mono-ui text-[10px] uppercase tracking-[0.16em] text-[var(--muted)]">
-              It was
-            </p>
-            <p className="font-display mt-2 text-2xl text-[var(--fg)]">
-              {answer?.name ?? "…"}
-            </p>
-            <pre className="mt-4 max-h-48 overflow-auto rounded-md border border-[var(--line)] bg-[color-mix(in_srgb,var(--fg)_3.5%,var(--bg))] p-3 text-left text-[11px] leading-relaxed">
-              <code className="font-mono-ui whitespace-pre">{code}</code>
-            </pre>
-          </div>
+        <motion.div
+          initial={{ opacity: 0, y: 10 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.15, duration: 0.35 }}
+          className="flex flex-col items-center gap-6"
+        >
           <NextGameButton
             href={nextGameAfterReveal.href}
             gameTitle={nextGameAfterReveal.title}
@@ -305,7 +330,7 @@ export function RevealGame({
             kind="lang"
             userScore={0}
           />
-        </div>
+        </motion.div>
       ) : null}
     </div>
   );

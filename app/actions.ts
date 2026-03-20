@@ -30,6 +30,11 @@ export async function getRevealAnswer(dateKey: string) {
   return { id: s.languageId, name: lang?.name ?? s.languageId };
 }
 
+export async function getLangAnswer(dateKey: string) {
+  const secret = getDailyLanguage(dateKey);
+  return { id: secret.id, name: secret.name };
+}
+
 export async function submitStarPick(
   dateKey: string,
   roundIndex: number,
