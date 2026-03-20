@@ -34,28 +34,28 @@ export const HOME_GAMES: HomeGameEntry[] = [
     href: "/stars",
     title: GAME_DISPLAY_TITLE.stars,
     blurb:
-      "Five rounds in a row: the winner stays on the left, a new repo challenges from the right.",
+      "Famous open-source projects and GitHub star counts — pick the repo with more stars in five daily matchups (fixed snapshot for everyone).",
     persistId: "stars",
   },
   {
     href: "/ipo",
     title: GAME_DISPLAY_TITLE.ipo,
     blurb:
-      "Same chain mechanic — winner holds the left slot while a new company enters on the right.",
+      "Tech company IPOs — compare opening valuations and who listed earlier in five head-to-heads using rough, static figures (not live markets).",
     persistId: "ipo",
   },
   {
     href: "/complexity",
     title: GAME_DISPLAY_TITLE.complexity,
     blurb:
-      "Pick the tightest complexity bound — algorithms and data structures, no tricks.",
+      "Time and space complexity for real algorithms and data structures — five multiple-choice picks for the tightest Big‑O bound.",
     persistId: "complexity",
   },
   {
     href: "/timeline",
     title: GAME_DISPLAY_TITLE.timeline,
     blurb:
-      "Earlier event keeps the left; five rounds, new challenger on the right each time.",
+      "Moments from computing history — releases, launches, and milestones. Decide which happened first across five daily comparisons.",
     persistId: "timeline",
   },
 ];

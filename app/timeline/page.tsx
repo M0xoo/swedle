@@ -11,7 +11,7 @@ export const metadata: Metadata = {
     "Which tech milestone happened first? Five daily comparisons — the earlier event keeps the left slot in a running chain.",
   alternates: { canonical: "/timeline" },
   openGraph: {
-    title: "Chrono Commit | SWEDLE",
+    title: `${GAME_DISPLAY_TITLE.timeline} | SWEDLE`,
     url: "/timeline",
   },
 };
