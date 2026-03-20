@@ -239,15 +239,15 @@ export function RevealGame({
               transition={{ delay: 0.45, duration: 0.4 }}
               className="mt-6 flex flex-col items-center gap-6 border-t border-[var(--line)] pt-6"
             >
+              <NextGameButton
+                href={nextGameAfterReveal.href}
+                gameTitle={nextGameAfterReveal.title}
+              />
               <DailyCommunityStats
                 dateKey={dateKey}
                 game="reveal"
                 kind="lang"
                 userScore={rows.length}
-              />
-              <NextGameButton
-                href={nextGameAfterReveal.href}
-                gameTitle={nextGameAfterReveal.title}
               />
             </motion.div>
           </div>
