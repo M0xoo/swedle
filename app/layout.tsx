@@ -1,5 +1,6 @@
 import type { Metadata, Viewport } from "next";
 import { Fraunces, IBM_Plex_Mono, Source_Sans_3 } from "next/font/google";
+import { SiteFooter } from "@/components/SiteFooter";
 import { SITE_DESCRIPTION } from "@/lib/seo";
 import { getSiteUrl } from "@/lib/site-url";
 import "./globals.css";
@@ -85,7 +86,8 @@ export default function RootLayout({
       className={`${fraunces.variable} ${sourceSans.variable} ${ibmMono.variable} h-full antialiased`}
     >
       <body className="flex min-h-full flex-col bg-[var(--bg)] text-[var(--fg)] [font-family:var(--font-sans),ui-sans-serif,system-ui,sans-serif]">
-        {children}
+        <div className="flex min-h-full flex-1 flex-col">{children}</div>
+        <SiteFooter />
       </body>
     </html>
   );

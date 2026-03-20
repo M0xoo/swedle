@@ -26,8 +26,9 @@ export default function Home() {
             SWEDLE
           </h1>
           <p className="max-w-md text-[1.05rem] leading-relaxed text-[var(--muted)]">
-            One fresh set each UTC day. No logins — scores stay in your
-            browser.
+            Five daily puzzles built for engineers—guess a language, bracket
+            repos and IPOs, drill Big‑O, and place tech milestones in time. A
+            new set at UTC midnight; no account.
           </p>
           <div className="flex flex-wrap items-baseline gap-x-3 gap-y-1 text-sm">
             <DailyPuzzleDate dateKey={dateKey} variant="home" />
@@ -39,11 +40,6 @@ export default function Home() {
         <section className="grid gap-3 sm:grid-cols-2">
           <HomeGameTiles dateKey={dateKey} games={HOME_GAMES} />
         </section>
-
-        <footer className="border-t border-[var(--line)] pt-8 text-xs leading-relaxed text-[var(--muted2)]">
-          Static data and daily seeds — star counts and IPO figures are
-          snapshots for fair play, not live market data.
-        </footer>
       </main>
     </div>
   );
