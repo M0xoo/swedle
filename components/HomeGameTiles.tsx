@@ -1,7 +1,8 @@
 "use client";
 
 import Link from "next/link";
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
+import { HubTotal } from "@/components/HubTotal";
 import type { HomeGameEntry } from "@/lib/home-games";
 import {
   getHomeGameTileStatus,
@@ -63,33 +64,51 @@ export function HomeGameTiles({
     };
   }, [dateKey, games]);
 
+  const langGame = useMemo(
+    () => games.find((g) => g.persistId === "lang"),
+    [games],
+  );
+  const quizGames = useMemo(
+    () => games.filter((g) => g.persistId !== "lang"),
+    [games],
+  );
+
+  function tileLink(g: HomeGameEntry, colSpanFull: boolean) {
+    const s = statuses[g.href] ?? { state: "idle" as const };
+    return (
+      <Link
+        key={g.href}
+        href={g.href}
+        className={`game-tile group flex flex-col ${colSpanFull ? "mb-5 sm:col-span-2 sm:mb-6" : ""}`}
+      >
+        <h2 className="font-display text-lg font-medium text-[var(--fg)] group-hover:text-[var(--accent-bright)]">
+          {g.title}
+        </h2>
+        <p className="mt-2 text-sm leading-relaxed text-[var(--muted)]">
+          {g.blurb}
+        </p>
+        <div className="mt-4 grid w-full grid-cols-[minmax(0,1fr)_auto] items-center gap-x-3">
+          <div className="min-w-0">
+            {s.state === "done" ? <DoneLeft status={s} /> : null}
+          </div>
+          <span className="inline-flex h-6 shrink-0 items-center text-xs font-medium leading-none tracking-wide text-[var(--accent)] group-hover:text-[var(--accent-bright)]">
+            Open →
+          </span>
+        </div>
+      </Link>
+    );
+  }
+
   return (
     <>
-      {games.map((g) => {
-        const s = statuses[g.href] ?? { state: "idle" as const };
-        return (
-          <Link
-            key={g.href}
-            href={g.href}
-            className="game-tile group flex flex-col"
-          >
-            <h2 className="font-display text-lg font-medium text-[var(--fg)] group-hover:text-[var(--accent-bright)]">
-              {g.title}
-            </h2>
-            <p className="mt-2 text-sm leading-relaxed text-[var(--muted)]">
-              {g.blurb}
-            </p>
-            <div className="mt-4 grid w-full grid-cols-[minmax(0,1fr)_auto] items-center gap-x-3">
-              <div className="min-w-0">
-                {s.state === "done" ? <DoneLeft status={s} /> : null}
-              </div>
-              <span className="inline-flex h-6 shrink-0 items-center text-xs font-medium leading-none tracking-wide text-[var(--accent)] group-hover:text-[var(--accent-bright)]">
-                Open →
-              </span>
-            </div>
-          </Link>
-        );
-      })}
+      {langGame ? tileLink(langGame, true) : null}
+
+      <div className="flex flex-wrap items-baseline gap-x-3 gap-y-1 text-sm sm:col-span-2">
+        <span className="text-[var(--muted2)]">Quiz points</span>
+        <HubTotal dateKey={dateKey} />
+      </div>
+
+      {quizGames.map((g) => tileLink(g, false))}
     </>
   );
 }

@@ -1,7 +1,6 @@
 import type { Metadata } from "next";
 import { DailyPuzzleDate } from "@/components/DailyPuzzleDate";
 import { HomeGameTiles } from "@/components/HomeGameTiles";
-import { HubTotal } from "@/components/HubTotal";
 import { getUtcDateKey } from "@/lib/daily";
 import { HOME_GAMES } from "@/lib/home-games";
 import { SITE_DESCRIPTION } from "@/lib/seo";
@@ -30,10 +29,8 @@ export default function Home() {
             repos and IPOs, drill Big‑O, and place tech milestones in time. A
             new set at UTC midnight; no account.
           </p>
-          <div className="flex flex-wrap items-baseline gap-x-3 gap-y-1 text-sm">
+          <div className="text-sm">
             <DailyPuzzleDate dateKey={dateKey} variant="home" />
-            <span className="text-[var(--muted2)]">Quiz points</span>
-            <HubTotal dateKey={dateKey} />
           </div>
         </header>
 
