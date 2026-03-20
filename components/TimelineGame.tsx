@@ -133,9 +133,6 @@ export function TimelineGame({
                   <p className="mt-2 text-sm font-medium leading-snug text-[var(--fg)]">
                     {r.left.label}
                   </p>
-                  <p className="font-mono-ui mt-2 text-xs text-[var(--muted2)]">
-                    ~{r.left.year}
-                  </p>
                 </motion.button>
                 <motion.button
                   key={r.right.id}
@@ -171,9 +168,6 @@ export function TimelineGame({
                   </p>
                   <p className="mt-2 text-sm font-medium leading-snug text-[var(--fg)]">
                     {r.right.label}
-                  </p>
-                  <p className="font-mono-ui mt-2 text-xs text-[var(--muted2)]">
-                    ~{r.right.year}
                   </p>
                 </motion.button>
               </div>
