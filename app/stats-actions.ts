@@ -1,6 +1,7 @@
 "use server";
 
 import { isFirebaseStatsEnabled } from "@/lib/firebase-admin";
+import { statsLog } from "@/lib/stats/stats-log";
 import { getDailyComplexity } from "@/lib/games/complexity";
 import { getDailyIpoQuiz } from "@/lib/games/ipos";
 import { getDailyStarBattle } from "@/lib/games/stars";
@@ -48,18 +49,36 @@ export async function recordDailyCompletion(
   score: number,
 ): Promise<{ ok: boolean; error?: string }> {
   if (!isFirebaseStatsEnabled()) {
+    statsLog("recordDailyCompletion skipped", { reason: "unconfigured" });
     return { ok: false, error: "unconfigured" };
   }
   try {
     if (game === "lang") {
-      if (!validateLangScore(score)) return { ok: false, error: "invalid" };
+      if (!validateLangScore(score)) {
+        statsLog("recordDailyCompletion rejected", {
+          dateKey,
+          game,
+          score,
+          reason: "invalid_lang_score",
+        });
+        return { ok: false, error: "invalid" };
+      }
     } else if (!validateQuizScore(dateKey, game, score)) {
+      statsLog("recordDailyCompletion rejected", {
+        dateKey,
+        game,
+        score,
+        reason: "invalid_quiz_score",
+      });
       return { ok: false, error: "invalid" };
     }
+    statsLog("recordDailyCompletion", { dateKey, game, score });
     await incrementDailyStats(dateKey, game, score);
+    statsLog("recordDailyCompletion done", { dateKey, game, score });
     return { ok: true };
   } catch (e) {
-    console.error("recordDailyCompletion", e);
+    console.error("[swedle:stats] recordDailyCompletion error", e);
+    statsLog("recordDailyCompletion failed", { dateKey, game, error: String(e) });
     return { ok: false, error: "write_failed" };
   }
 }
@@ -78,11 +97,22 @@ export async function getDailyStats(
   game: StatsGame,
 ): Promise<DailyStatsResult> {
   if (!isFirebaseStatsEnabled()) {
+    statsLog("getDailyStats", { dateKey, game, enabled: false, reason: "unconfigured" });
     return { enabled: false };
   }
   try {
     const snap = await readDailyStatsDoc(dateKey, game);
     const { solvers, buckets } = bucketsFromSnapshot(game, snap.data());
+    const bucketSum = buckets.reduce((a, b) => a + b, 0);
+    statsLog("getDailyStats", {
+      dateKey,
+      game,
+      docId: `${dateKey}_${game}`,
+      exists: snap.exists,
+      solvers,
+      buckets,
+      bucketSum,
+    });
     return {
       enabled: true,
       kind: game === "lang" ? "lang" : "quiz",
@@ -90,7 +120,8 @@ export async function getDailyStats(
       buckets,
     };
   } catch (e) {
-    console.error("getDailyStats", e);
+    console.error("[swedle:stats] getDailyStats error", e);
+    statsLog("getDailyStats failed", { dateKey, game, error: String(e) });
     return { enabled: false };
   }
 }

@@ -2,6 +2,7 @@ import { FieldValue } from "firebase-admin/firestore";
 import { getAdminFirestore } from "@/lib/firebase-admin";
 import type { StatsGame } from "@/lib/stats/types";
 import { maxBucketIndex } from "@/lib/stats/types";
+import { statsLog } from "@/lib/stats/stats-log";
 
 function docId(dateKey: string, game: StatsGame) {
   return `${dateKey}_${game}`;
@@ -25,6 +26,13 @@ export async function incrementDailyStats(
   const db = getAdminFirestore();
   const ref = db.collection("dailyStats").doc(docId(dateKey, game));
   const field = `c${bucketIndex}`;
+  const id = docId(dateKey, game);
+  statsLog("Firestore write", {
+    collection: "dailyStats",
+    docId: id,
+    incrementSolvers: 1,
+    incrementBucket: field,
+  });
   await ref.set(
     {
       solvers: FieldValue.increment(1),
@@ -33,6 +41,17 @@ export async function incrementDailyStats(
     },
     { merge: true },
   );
+  statsLog("Firestore write OK", { docId: id });
+}
+
+function statNumber(v: unknown): number {
+  if (typeof v === "number" && Number.isFinite(v)) return Math.trunc(v);
+  if (typeof v === "bigint") return Number(v);
+  if (typeof v === "string" && v.trim() !== "") {
+    const n = Number(v);
+    return Number.isFinite(n) ? Math.trunc(n) : 0;
+  }
+  return 0;
 }
 
 export function bucketsFromSnapshot(
@@ -42,13 +61,8 @@ export function bucketsFromSnapshot(
   const maxB = maxBucketIndex(game);
   const buckets: number[] = [];
   for (let i = 0; i <= maxB; i++) {
-    const v = data?.[`c${i}`];
-    buckets.push(typeof v === "number" && Number.isFinite(v) ? v : 0);
+    buckets.push(statNumber(data?.[`c${i}`]));
   }
-  const solversRaw = data?.solvers;
-  const solvers =
-    typeof solversRaw === "number" && Number.isFinite(solversRaw)
-      ? solversRaw
-      : 0;
+  const solvers = statNumber(data?.solvers);
   return { solvers, buckets };
 }

@@ -107,6 +107,10 @@ export function DailyCommunityStats({
     let cancelled = false;
 
     async function run() {
+      const key = storageKey(dateKey, game);
+      const already =
+        typeof window !== "undefined" && localStorage.getItem(key) === "1";
+
       const first = await getDailyStats(dateKey, game);
       if (cancelled) return;
       if (!first.enabled) {
@@ -117,24 +121,19 @@ export function DailyCommunityStats({
       setSolvers(first.solvers);
       setBuckets(first.buckets);
 
-      const key = storageKey(dateKey, game);
-      const already =
-        typeof window !== "undefined" && localStorage.getItem(key) === "1";
-
       if (!already) {
         const rec = await recordDailyCompletion(dateKey, game, userScore);
         if (!cancelled && rec.ok && typeof window !== "undefined") {
           localStorage.setItem(key, "1");
         }
-        const second = await getDailyStats(dateKey, game);
-        if (
-          !cancelled &&
-          second.enabled &&
-          second.solvers >= (first.solvers ?? 0)
-        ) {
-          setSolvers(second.solvers);
-          setBuckets(second.buckets);
-        }
+      }
+
+      // Always re-read so we show Firestore truth (fixes stale zeros when
+      // localStorage was set earlier or another tab/session wrote first).
+      const fresh = await getDailyStats(dateKey, game);
+      if (!cancelled && fresh.enabled) {
+        setSolvers(fresh.solvers);
+        setBuckets(fresh.buckets);
       }
     }
 
@@ -165,11 +164,18 @@ export function DailyCommunityStats({
         <span className="text-[var(--accent-bright)]">{solvers}</span>
         <span className="text-[var(--muted2)]"> solver{solvers === 1 ? "" : "s"}</span>
       </p>
+      <p className="mt-1 text-[10px] leading-relaxed text-[var(--muted2)]">
+        Your finish is included in this total and chart (one tally per device,
+        per game, UTC day).
+      </p>
       {beat !== null ? (
         <p className="mt-1.5 text-sm text-[var(--muted)]">
           You did better than{" "}
           <span className="font-medium text-[var(--good)]">{beat}%</span> of
-          them.
+          players today
+          {kind === "quiz"
+            ? "—only those with a strictly lower score."
+            : "—only those with a strictly worse result (e.g. more guesses or a loss)."}
         </p>
       ) : kind === "lang" && userScore === 0 ? (
         <p className="mt-1.5 text-sm text-[var(--muted)]">

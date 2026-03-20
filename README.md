@@ -63,3 +63,5 @@ Any Node host that supports Next works (e.g. [Vercel](https://vercel.com/docs/fr
 **Optional env:** `NEXT_PUBLIC_SITE_URL` — overrides the default production origin (`https://swedle.mokh.xyz`) for canonical URLs, `sitemap.xml`, and Open Graph/Twitter `metadataBase`. On **Vercel preview** deployments, the preview hostname is used automatically so links stay on the preview.
 
 **Firebase (community stats):** Create a Firebase project → enable **Firestore** (Native) → create a **service account** and download JSON. Set `FIREBASE_SERVICE_ACCOUNT_KEY` to the **full JSON on one line** (keep `private_key` newlines as `\n` inside the string), or use `GOOGLE_APPLICATION_CREDENTIALS` / `FIREBASE_USE_ADC=1` on GCP; see `.env.example`. Firestore collection: `dailyStats` with doc IDs `{UTC-date}_{game}` (`stars`, `ipo`, `timeline`, `complexity`, `lang`). You can lock client access in Firestore rules since only Admin SDK writes.
+
+**Debugging:** With `npm run dev`, server logs prefixed `[swedle:stats]` show init, each `getDailyStats` read, and `recordDailyCompletion` / Firestore writes. For production builds, set `SWEDLE_STATS_LOG=1` to enable the same logs.
