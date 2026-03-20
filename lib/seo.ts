@@ -1,5 +1,5 @@
 export const SITE_DESCRIPTION =
-  "Six daily mini-games for developers: Langdle, Reveal (code snippet), star and IPO brackets, Big‑O, and tech chronology. New set every UTC day—no account; progress stays in your browser.";
+  "Daily puzzle hub for software engineers—language guessing, code-snippet reveal, repo stars, IPO matchups, Big‑O, and tech timelines. Shared UTC-midnight set; no account; progress in your browser.";
 
 /** `public/screenshot.png` — Open Graph / Twitter cards (`summary_large_image`). */
 export const SITE_OG_IMAGE_ALT =

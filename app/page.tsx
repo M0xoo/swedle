@@ -25,9 +25,11 @@ export default function Home() {
             SWEDLE
           </h1>
           <p className="max-w-md text-[1.05rem] leading-relaxed text-[var(--muted)]">
-            Six daily puzzles for engineers—Langdle, a growing code snippet,
-            then bracket repos and IPOs, Big‑O, and tech milestones in time. A
-            new set at UTC midnight; no account.
+            SWEDLE is a daily puzzle hub for software engineers: six mini-games
+            spanning programming languages, a code-snippet reveal, open-source
+            star brackets, IPO trivia, Big‑O complexity, and tech-history
+            timelines. Everyone gets the same daily set; it turns over at UTC
+            midnight. No sign-up—your progress stays in the browser.
           </p>
           <div className="text-sm">
             <DailyPuzzleDate dateKey={dateKey} variant="home" />
