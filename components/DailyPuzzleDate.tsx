@@ -88,9 +88,8 @@ export function DailyPuzzleDate({
         onClick={() => setOpen((v) => !v)}
         className={variantChip[variant]}
       >
-        <time dateTime={dateKey}>
-          {dateKey}
-          {variant === "game" ? " UTC" : null}
+        <time dateTime={`${dateKey}T00:00:00.000Z`}>
+          {dateKey} UTC
         </time>
       </button>
 

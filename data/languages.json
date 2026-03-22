@@ -50,16 +50,6 @@
     "year": 1995
   },
   {
-    "id": "csharp",
-    "name": "C#",
-    "paradigm": "multi",
-    "paradigms": ["multi", "oop", "functional"],
-    "openSource": true,
-    "execution": "hybrid",
-    "platforms": ["linux", "windows", "macos"],
-    "year": 2000
-  },
-  {
     "id": "cpp",
     "name": "C++",
     "paradigm": "multi",
@@ -78,6 +68,17 @@
     "execution": "compiled",
     "platforms": ["linux", "windows", "macos"],
     "year": 1972
+  },
+
+  {
+    "id": "csharp",
+    "name": "C#",
+    "paradigm": "multi",
+    "paradigms": ["multi", "oop", "functional"],
+    "openSource": true,
+    "execution": "hybrid",
+    "platforms": ["linux", "windows", "macos"],
+    "year": 2000
   },
   {
     "id": "javascript",
